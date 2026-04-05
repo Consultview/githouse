@@ -1,0 +1,221 @@
+/* Layout Principal */
+.admin-layout {
+  display: flex;
+  background: #f4f7fa;
+  min-height: 100vh;
+}
+
+.admin-main {
+  flex: 1;
+  /* 100px topo para descer bem, 280px esquerda para respeitar a Sidebar */
+  padding: 100px 40px 40px 280px; 
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+/* Cabeçalho da Página */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 20px;
+}
+
+.header-title h1 {
+  font-size: 1.8rem;
+  color: #1a1f36;
+  font-weight: 800;
+  margin: 0;
+}
+
+.header-title p {
+  color: #697386;
+  font-size: 1rem;
+  margin-top: 5px;
+}
+
+/* Botão Novo Usuário */
+.btn-primary-new {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.btn-primary-new:hover { 
+  background: #333; 
+  transform: translateY(-1px); 
+}
+
+/* Tabela e Container */
+.table-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e3e8ee;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.standard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.standard-table th {
+  text-align: left;
+  padding: 18px 24px;
+  background: #f8fafc;
+  color: #4f566b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #e3e8ee;
+}
+
+.standard-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+  color: #3c4257;
+  vertical-align: middle;
+}
+
+.standard-table tr:hover { 
+  background: #fcfdfe; 
+}
+
+/* Estilização das Células de Usuário */
+.user-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.text-bold { 
+  font-weight: 700; 
+  color: #1a1f36; 
+}
+
+.perfil-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #2563eb; /* Azul profissional para o perfil */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Célula de Contato */
+.contact-info-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-info-cell span {
+  font-weight: 500;
+}
+
+.contact-info-cell small {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* Status Pill */
+.status-pill {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.status-pill.active { 
+  background: #e3f9eb; 
+  color: #0e6245; 
+}
+
+.status-pill.inactive { 
+  background: #fdebeb; 
+  color: #9d2d2d; 
+}
+
+/* Botão de Ação (Olho) */
+.btn-icon-view {
+  background: transparent;
+  border: none;
+  color: #697386;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: 0.2s;
+}
+
+.btn-icon-view:hover { 
+  background: #f0f2f5; 
+  color: #2563eb; 
+}
+
+/* Classes Auxiliares */
+.text-id { color: #8792a2; font-weight: 600; font-family: monospace; }
+.text-muted { color: #64748b; font-weight: 500; }
+.text-center { text-align: center; }
+
+/* Animação */
+.anim-fade { 
+  animation: fadeIn 0.4s ease-out; 
+}
+
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(10px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1200px) {
+  .admin-main { padding-left: 280px; }
+}
+
+@media (max-width: 1024px) {
+  .admin-main { 
+    padding: 80px 20px 40px 20px; /* Remove recuo da sidebar e diminui topo */
+  }
+  .admin-header, .table-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-header { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 15px; 
+  }
+  .btn-primary-new { 
+    width: 100%; 
+    justify-content: center; 
+  }
+}

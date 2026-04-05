@@ -1,0 +1,28 @@
+/* Navbar */
+.ch-navbar {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--ch-border);
+  background: white;
+  position: sticky; top: 0; z-index: 100;
+}
+.ch-navbar .container { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 24px; font-weight: 700; color: var(--ch-text-dark); text-decoration: none; }
+.logo span { color: var(--ch-primary); }
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a { text-decoration: none; color: var(--ch-text-gray); font-weight: 500; }
+
+/* Hero */
+.hero { padding: 100px 0; text-align: center; background: var(--ch-soft-gray); }
+.hero h1 { font-size: 56px; margin-bottom: 24px; letter-spacing: -0.02em; }
+.hero h1 span { color: var(--ch-primary); }
+.hero p { font-size: 20px; color: var(--ch-text-gray); max-width: 700px; margin: 0 auto 40px; }
+
+/* Soluções */
+.solutions { padding: 100px 0; }
+.solutions-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+  gap: 32px; margin-top: 60px; 
+}
+.solution-card:hover { transform: translateY(-8px); border-color: var(--ch-primary); }
+.icon-box { font-size: 40px; margin-bottom: 20px; }

@@ -1,0 +1,137 @@
+:root {
+  --primary: #2563eb;
+  --bg-input: #f8fafc;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+}
+
+.form-container {
+  background: #ffffff !important;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px 20px;
+}
+
+.span-2 { grid-column: span 2; }
+
+/* Reset de fundo para evitar o preto */
+.input-group input, 
+.input-group select, 
+.input-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--bg-input) !important;
+  color: var(--text) !important;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input-group textarea {
+  min-height: 100px;
+  max-height: 200px;
+  resize: vertical;
+}
+
+.input-group label {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+/* Floating Label Logic */
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label,
+.input-group select:focus + label,
+.input-group select:valid + label,
+.input-group textarea:focus + label,
+.input-group textarea:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: #ffffff;
+  z-index: 10;
+}
+
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+  border-color: var(--primary);
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* ESTILO DA MINIATURA DA FOTO */
+.photo-thumb {
+  width: 120px; /* Tamanho da miniatura */
+  height: 120px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.2s;
+  position: relative;
+}
+
+.photo-thumb:hover {
+  border-color: var(--primary);
+  background: #eff6ff;
+}
+
+.img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.has-photo {
+  border: 2px solid var(--primary);
+}
+
+/* Footer & Buttons */
+.form-footer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-primary { background: #000; color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn-secondary { background: #fff; color: var(--muted); border: 1px solid var(--border); padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 1; }
+}

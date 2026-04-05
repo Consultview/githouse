@@ -1,0 +1,182 @@
+:root {
+  --primary-color: #2563eb;
+  --bg-input: #f8fafc;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --sidebar-width: 260px; /* Largura padrão da sua sidebar */
+}
+
+.form-container {
+  background: white;
+  max-width: 800px;
+  margin: 40px auto; 
+  /* Ajuste para não ficar atrás do menu em telas grandes */
+  margin-left: calc(var(--sidebar-width) + 40px); 
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 1;
+}
+
+.form-title {
+  margin-bottom: 30px;
+  font-size: 1.5rem;
+  color: var(--text-main);
+  font-weight: 700;
+  text-align: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px 20px;
+}
+
+.span-2 { grid-column: span 2; }
+
+/* Estrutura do Floating Label (Input e Select) */
+.input-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-input);
+  color: var(--text-main);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  outline: none;
+  appearance: none;
+}
+
+/* Seta customizada para o Select */
+.input-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.input-group label {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+/* Regra para Flutuar */
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label,
+.input-group select:focus + label,
+.input-group select:valid + label {
+  top: -10px;
+  left: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: white;
+  z-index: 10;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row !important;
+  gap: 10px;
+}
+.sub-group { position: relative; flex: 1; }
+
+/* Replicando lógica de flutuar para sub-groups */
+.sub-group input:focus + label,
+.sub-group input:not(:placeholder-shown) + label,
+.sub-group select:focus + label,
+.sub-group select:valid + label {
+  top: -10px;
+  left: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: white;
+  z-index: 10;
+}
+
+.uppercase { text-transform: uppercase; }
+.lowercase { text-transform: lowercase; }
+
+.form-footer {
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 25px;
+}
+
+.btn-primary {
+  background: #000;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover { background: #333; }
+.btn-secondary:hover { background: #f1f5f9; color: var(--text-main); }
+
+.anim-up {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVIDADE - AJUSTE DO MENU */
+@media (max-width: 1200px) {
+  .form-container {
+    margin-left: auto; /* Centraliza quando o menu encolher ou sumir */
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 1; }
+  .form-container { padding: 20px; }
+  .form-footer { flex-direction: column-reverse; }
+  .btn-primary, .btn-secondary { width: 100%; }
+}

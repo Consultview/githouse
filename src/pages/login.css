@@ -1,0 +1,212 @@
+/* ================================================================
+   LOGIN STYLE - CITYHOUSE ENTERPRISE
+   ================================================================ */
+
+:root {
+  --auth-bg: #f8fafc;
+  --auth-text-dark: #1e293b;
+  --auth-text-gray: #64748b;
+  --auth-primary: #3498db;
+  --auth-border: #e2e8f0;
+}
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--auth-bg);
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 20px;
+}
+
+.auth-content {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-header .logo-full {
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: var(--auth-text-dark);
+}
+
+.auth-header .logo-full span {
+  color: var(--auth-primary);
+}
+
+.brand-tagline {
+  color: var(--auth-text-gray);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* Card */
+.auth-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--auth-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Formulário */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Organização do Label + Esqueceu a Senha */
+.field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* Alinha o link com a base do label */
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--auth-text-dark);
+}
+
+.text-link {
+  font-size: 12px;
+  color: var(--auth-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.text-link:hover {
+  opacity: 0.7;
+}
+
+/* Inputs Brancos com Texto Escuro */
+.form-field input {
+  background-color: #ffffff !important;
+  color: var(--auth-text-dark) !important;
+  border: 1px solid var(--auth-border);
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-field input:focus {
+  border-color: var(--auth-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Botão Principal */
+.btn-main {
+  width: 100%;
+  padding: 14px;
+  background: var(--auth-text-dark);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.btn-main:hover:not(:disabled) {
+  background: #000;
+}
+
+/* Divisor */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: #94a3b8;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--auth-border);
+}
+
+.divider span {
+  padding: 0 12px;
+}
+
+/* Botão Google Moderno */
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  color: var(--auth-text-dark);
+  border: 1px solid var(--auth-border);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: background 0.2s;
+}
+
+.btn-google:hover {
+  background: #f8fafc;
+}
+
+/* Ícone oficial do Google */
+.btn-google::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-image: url('https://wikimedia.org_\"G\"_Logo.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+/* Mensagem de Bloqueio */
+.lock-alert {
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Loader */
+.loader {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
