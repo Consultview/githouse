@@ -1,168 +1,158 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from './../SupabaseClient';
 import './formchamado.css';
 
-export default function FormChamado({ onSave, onCancel, saving, condominios = [], usuarios = [], user }) {
-  const fileInputRef = useRef(null);
-  const [fotoPreview, setFotoPreview] = useState(null);
-  const [novo, setNovo] = useState({
+export default function FormChamado({ onSave, onCancel, saving, user, chamadoEdicao }) {
+  const [condominios, setCondominios] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null); 
+  const [previewUrl, setPreviewUrl] = useState(chamadoEdicao?.foto_url || null);
+  const [internalSaving, setInternalSaving] = useState(false);
+  
+  const [form, setForm] = useState({
+    condominio_id: '',
     titulo: '',
     descricao_morador: '',
-    condominio_id: '',
-    bloco: '',
-    numero_unidade: '',
-    categoria: 'OUTROS',
+    local_exato: '',
+    categoria: 'MANUTENCAO',
     prioridade: 'MEDIA',
-    anexo_arquivo: null
+    status: 'ABERTO',
+    usuario_aberto_id: '',
+    foto_url: '',
+    url_anexo_abertura: ''
   });
 
   useEffect(() => {
-    if (user) {
-      setNovo(prev => ({
+    fetchCondos();
+    if (chamadoEdicao) setForm({ ...chamadoEdicao });
+    else if (user) {
+      setForm(prev => ({
         ...prev,
-        condominio_id: user.condominio_id ? String(user.condominio_id) : '',
-        bloco: user.bloco || '',
-        numero_unidade: user.numero_casa || user.numero_unidade || ''
+        condominio_id: user.condominio_id || '',
+        usuario_aberto_id: user.id || ''
       }));
     }
-  }, [user]);
+  }, [user, chamadoEdicao]);
 
-  const blocosDisponiveis = useMemo(() => {
-    if (!novo.condominio_id) return [];
-    return usuarios
-      .filter(u => String(u.condominio_id) === String(novo.condominio_id))
-      .map(u => u.bloco)
-      .filter((v, i, s) => v && s.indexOf(v) === i).sort();
-  }, [novo.condominio_id, usuarios]);
+  async function fetchCondos() {
+    const { data } = await supabase.from('condominios').select('id, nome, endereco, numero').eq('status', true);
+    setCondominios(data || []);
+  }
 
-  const unidadesDisponiveis = useMemo(() => {
-    if (!novo.bloco) return [];
-    return usuarios
-      .filter(u => String(u.condominio_id) === String(novo.condominio_id) && u.bloco === novo.bloco)
-      .map(u => u.numero_casa || u.numero_unidade)
-      .filter((v, i, s) => v && s.indexOf(v) === i).sort();
-  }, [novo.bloco, novo.condominio_id, usuarios]);
-
+  // 1. Carrega miniatura local (Blob temporário)
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1000; 
-        const scaleSize = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-        setFotoPreview(compressedBase64);
-        setNovo(prev => ({ ...prev, anexo_arquivo: compressedBase64 }));
-      };
-    };
+    const file = e.target.files[0]; // Pegamos o primeiro arquivo da lista
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'condominio_id') {
-      setNovo({ ...novo, [name]: value, bloco: '', numero_unidade: '' });
-    } else if (name === 'bloco') {
-      setNovo({ ...novo, [name]: value, numero_unidade: '' });
-    } else {
-      setNovo({ ...novo, [name]: value.toUpperCase() });
+  // 2. Upload Real para o Bucket 'anexos'
+  const uploadToSupabase = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+    const filePath = `chamados/${fileName}`;
+
+    // AQUI ESTÁ A CORREÇÃO PARA O BUCKET 'anexos'
+    const { error: uploadError } = await supabase.storage
+      .from('anexos') 
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage.from('anexos').getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setInternalSaving(true);
+
+    try {
+      let finalData = { ...form };
+
+      // O upload só acontece agora, ao clicar em salvar
+      if (selectedFile) {
+        const publicUrl = await uploadToSupabase(selectedFile);
+        finalData.foto_url = publicUrl;
+        finalData.url_anexo_abertura = publicUrl;
+      }
+
+      await onSave(finalData);
+    } catch (error) {
+      alert('Erro ao salvar no bucket anexos: ' + error.message);
+    } finally {
+      setInternalSaving(false);
     }
   };
 
   return (
-    <section className="form-container anim-up">
-      <form onSubmit={(e) => { e.preventDefault(); onSave(novo); }} className="modern-form">
+    <form onSubmit={handleSubmit} className="modern-form">
+      <div className="form-section">
+        <h3 className="section-title">📍 Localização</h3>
         <div className="form-grid">
-          <div className="input-group span-2">
-            <input name="titulo" type="text" required placeholder=" " value={novo.titulo} onChange={handleChange} />
-            <label>Título do Chamado *</label>
-          </div>
-
-          <div className="input-group">
-            <select name="condominio_id" required value={novo.condominio_id} onChange={handleChange}>
-              <option value=""></option>
-              {condominios.map(c => <option key={c.id} value={String(c.id)}>{c.nome}</option>)}
-            </select>
-            <label>Condomínio *</label>
-          </div>
-
-          <div className="input-group">
-            <select name="bloco" required value={novo.bloco} onChange={handleChange} disabled={!novo.condominio_id}>
-              <option value=""></option>
-              {blocosDisponiveis.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-            <label>Bloco / Rua *</label>
-          </div>
-
-          <div className="input-group">
-            <select name="numero_unidade" required value={novo.numero_unidade} onChange={handleChange} disabled={!novo.bloco}>
-              <option value=""></option>
-              {unidadesDisponiveis.map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-            <label>Unidade *</label>
-          </div>
-
-          <div className="input-group">
-            <select name="categoria" required value={novo.categoria} onChange={handleChange}>
-              <option value="OUTROS">OUTROS</option>
-              <option value="ELETRICA">ELÉTRICA</option>
-              <option value="HIDRAULICA">HIDRÁULICA</option>
-              <option value="PINTURA">PINTURA</option>
-            </select>
-            <label>Categoria *</label>
-          </div>
-
-          <div className="input-group">
-            <select name="prioridade" required value={novo.prioridade} onChange={handleChange}>
-              <option value="BAIXA">BAIXA</option>
-              <option value="MEDIA">MÉDIA</option>
-              <option value="ALTA">ALTA</option>
-            </select>
-            <label>Prioridade *</label>
-          </div>
-
-          <div className="input-group span-2">
-            <textarea
-              name="descricao_morador"
+          <div className="form-group">
+            <label>Condomínio</label>
+            <select 
+              value={form.condominio_id} 
+              onChange={(e) => setForm({...form, condominio_id: e.target.value})} 
               required
-              placeholder=" "
-              value={novo.descricao_morador}
-              onChange={e => setNovo({...novo, descricao_morador: e.target.value.toUpperCase()})}
+              disabled={!!user?.condominio_id && !chamadoEdicao}
+            >
+              <option value="">Selecione...</option>
+              {condominios.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Localização (Bloco/Apto)</label>
+            <input 
+              type="text" 
+              value={form.local_exato} 
+              onChange={(e) => setForm({...form, local_exato: e.target.value})}
+              placeholder="Ex: Bloco C, Apto 402"
+              required 
             />
-            <label>Descrição do Problema *</label>
           </div>
+        </div>
+      </div>
 
-          {/* Miniatura Discreta */}
-          <div className="input-group">
-            <input type="file" accept="image/*" capture="environment" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-            <div className={`photo-thumb ${fotoPreview ? 'has-photo' : ''}`} onClick={() => fileInputRef.current.click()}>
-              {fotoPreview ? (
-                <img src={fotoPreview} className="img-preview" alt="Preview" />
-              ) : (
-                <div className="photo-info">
-                  <span style={{fontSize: '20px'}}>📷</span>
-                  <small>FOTO</small>
-                </div>
-              )}
+      <div className="form-section">
+        <h3 className="section-title">📝 Detalhes</h3>
+        <div className="form-group">
+          <label>Título / Assunto</label>
+          <input type="text" value={form.titulo} onChange={(e) => setForm({...form, titulo: e.target.value})} placeholder="Resumo do problema" required />
+        </div>
+        <div className="form-group">
+          <label>Descrição do Morador</label>
+          <textarea value={form.descricao_morador} onChange={(e) => setForm({...form, descricao_morador: e.target.value})} rows="3" placeholder="O que está acontecendo?" required />
+        </div>
+      </div>
+
+      <div className="photo-area">
+        <label className="field-label">Evidência Fotográfica</label>
+        {previewUrl ? (
+          <div className="preview-box">
+            <img src={previewUrl} alt="Preview" />
+            <button type="button" className="btn-del-photo" onClick={() => {setPreviewUrl(null); setSelectedFile(null);}}>
+              Remover Foto
+            </button>
+          </div>
+        ) : (
+          <label className="upload-zone">
+            <input type="file" accept="image/*" onChange={handleFileChange} />
+            <div className="upload-content">
+              <span>📷 Câmera ou Galeria</span>
             </div>
-          </div>
-        </div>
+          </label>
+        )}
+      </div>
 
-        <div className="form-actions">
-           <button type="button" className="btn-secondary" onClick={onCancel}>CANCELAR</button>
-           <button type="submit" className="btn-primary" disabled={saving}>
-             {saving ? 'SALVANDO...' : 'ABRIR CHAMADO'}
-           </button>
-        </div>
-      </form>
-    </section>
+      <div className="form-actions">
+        <button type="button" className="btn-cancel" onClick={onCancel}>Cancelar</button>
+        <button type="submit" className="btn-save" disabled={saving || internalSaving}>
+          {saving || internalSaving ? 'Processando...' : (chamadoEdicao ? 'Salvar Alterações' : 'Abrir Chamado')}
+        </button>
+      </div>
+    </form>
   );
 }

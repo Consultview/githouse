@@ -8,7 +8,8 @@ import Usuarios from './pages/Usuarios';
 import Condominios from './pages/Condominios';
 import Dashboard from './pages/Dashboard';
 import Chamados from './pages/Chamados';
-
+import ServicosHome from './pages/ServicosHome';
+import DetalheChamado from './pages/DetalheChamado';
 
 import './styles/global.css';
 
@@ -39,9 +40,12 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/usuarios" element={<Usuarios />} />
-            <Route path="/condominios" element={<Condominios />} />
+            <Route path="/condominios" element={<Condominios />} />									<Route path="/servicos" element={<ServicosHome />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/chamados" element={<Chamados />} />
+         
+            <Route path="/detalhe/:id" element={<DetalheChamado />} />
+            
            
           </Routes>
         </main>

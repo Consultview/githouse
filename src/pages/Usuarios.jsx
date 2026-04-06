@@ -7,16 +7,18 @@ import './usuarios.css';
 
 export default function Usuarios() {
   const navigate = useNavigate();
-  
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [condominios, setCondominios] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAdding, setIsAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Mapeamento de perfis para exibição amigável
+  // Estados para Modal e Ações
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [isViewOnly, setIsViewOnly] = useState(false);
+
   const perfilNome = { 1: 'Admin', 2: 'Síndico', 3: 'Funcionário', 4: 'Morador' };
 
   const [novoUser, setNovoUser] = useState({
@@ -31,9 +33,7 @@ export default function Usuarios() {
     if (sessionData) {
       setUser(JSON.parse(sessionData));
       fetchData();
-    } else {
-      navigate('/login');
-    }
+    } else { navigate('/login'); }
   }, [navigate]);
 
   async function fetchData() {
@@ -45,62 +45,61 @@ export default function Usuarios() {
       ]);
       setUsers(resUsers.data || []);
       setCondominios(resCondos.data || []);
-    } catch (err) {
-      console.error("Erro:", err);
-    } finally {
-      setLoading(false);
+    } catch (err) { console.error("Erro:", err); } finally { setLoading(false); }
+  }
+
+  const handleOpenModal = (u = null, viewOnly = false) => {
+    setIsViewOnly(viewOnly);
+    if (u) {
+      setEditingId(u.id);
+      setNovoUser(u);
+    } else {
+      setEditingId(null);
+      setNovoUser({ nome: '', cpf: '', email: '', senha: '', perfil: '', condominio_id: '', bloco: '', numero_casa: '', telefone: '', status: true });
     }
+    setIsModalOpen(true);
+  };
+
+  async function toggleStatus(id, currentStatus) {
+    try {
+      const { error } = await supabase.from('usuarios').update({ status: !currentStatus }).eq('id', id);
+      if (error) throw error;
+      fetchData();
+    } catch (err) { alert("Erro ao alterar status"); }
   }
 
   async function handleSave(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setSaving(true);
     try {
-      const { error } = await supabase.from('usuarios').insert([novoUser]);
-      if (error) throw error;
-      setIsAdding(false);
-      setNovoUser({ nome: '', cpf: '', email: '', senha: '', perfil: '', condominio_id: '', bloco: '', numero_casa: '', telefone: '', status: true });
+      if (editingId) {
+        const { error } = await supabase.from('usuarios').update(novoUser).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('usuarios').insert([novoUser]);
+        if (error) throw error;
+      }
+      setIsModalOpen(false);
       fetchData();
-    } catch (err) {
-      alert("Erro ao salvar: " + err.message);
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) { alert("Erro ao salvar: " + err.message); } finally { setSaving(false); }
   }
 
   if (!user) return null;
 
   return (
-    <div className="admin-layout">
+    <div className="ch-app-wrapper">
       <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
 
-      <main className="admin-main">
-        <header className="admin-header">
-          <div className="header-title">
+      <main className="ch-main-content">
+        <div className="page-container">
           
-          </div>
-          {!isAdding && (
-            <button className="btn-primary-new" onClick={() => setIsAdding(true)}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              NOVO USUÁRIO
-            </button>
-          )}
-        </header>
+          <header className="top-actions">
+             <button className="btn-add-condo" onClick={() => handleOpenModal()}>
+                + NOVO USUÁRIO
+             </button>
+          </header>
 
-        {isAdding ? (
-          <FormUsuario
-            novoUser={novoUser}
-            setNovoUser={setNovoUser}
-            onSave={handleSave}
-            onCancel={() => setIsAdding(false)}
-            saving={saving}
-            condominios={condominios}
-          />
-        ) : (
-          <div className="table-container anim-fade">
+          <div className="data-display-area anim-fade">
             <div className="table-responsive">
               <table className="standard-table">
                 <thead>
@@ -122,7 +121,7 @@ export default function Usuarios() {
                         <td>
                           <div className="user-info-cell">
                             <span className="text-bold">{u.nome}</span>
-                            <span className="perfil-tag">{perfilNome[u.perfil] || 'Não definido'}</span>
+                            <span className="perfil-tag">{perfilNome[u.perfil]}</span>
                           </div>
                         </td>
                         <td>
@@ -133,17 +132,19 @@ export default function Usuarios() {
                         </td>
                         <td className="text-muted">{condo?.nome || 'Não Vinculado'}</td>
                         <td>
-                          <span className={`status-pill ${u.status ? 'active' : 'inactive'}`}>
+                          <button 
+                            className={`status-pill ${u.status ? 'active' : 'inactive'}`}
+                            onClick={() => toggleStatus(u.id, u.status)}
+                            title="Clique para alterar status"
+                          >
                             {u.status ? 'Ativo' : 'Inativo'}
-                          </span>
+                          </button>
                         </td>
                         <td className="text-center">
-                          <button className="btn-icon-view" title="Ver Detalhes">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                          </button>
+                          <div className="table-actions-group">
+                            <button className="btn-icon-action" onClick={() => handleOpenModal(u, true)} title="Visualizar">👁️</button>
+                            <button className="btn-icon-action" onClick={() => handleOpenModal(u, false)} title="Editar">✏️</button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -152,8 +153,25 @@ export default function Usuarios() {
               </table>
             </div>
           </div>
-        )}
+        </div>
       </main>
+
+      {/* Modal - Z-Index superior à Sidebar */}
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>{isViewOnly ? 'Visualizar Usuário' : editingId ? 'Editar Usuário' : 'Novo Usuário'}</h2>
+              <button className="btn-close" onClick={() => setIsModalOpen(false)}>&times;</button>
+            </div>
+            <FormUsuario
+              novoUser={novoUser} setNovoUser={setNovoUser}
+              onSave={handleSave} onCancel={() => setIsModalOpen(false)}
+              saving={saving} condominios={condominios} isViewOnly={isViewOnly}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

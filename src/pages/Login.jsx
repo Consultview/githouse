@@ -10,7 +10,7 @@ export default function Login() {
   const [senha, setSenha] = useState('');
   const [lockMessage, setLockMessage] = useState('');
 
-  // 1. Identificador do Dispositivo
+  // Identificador do Dispositivo para o bloqueio
   const getDeviceKey = () => {
     let token = localStorage.getItem('ch_device_token');
     if (!token) {
@@ -27,16 +27,14 @@ export default function Login() {
   const checkLockout = () => {
     const deviceId = getDeviceKey();
     const lockUntil = localStorage.getItem(`ch_lock_until_${deviceId}`);
-    
     if (lockUntil) {
       const remaining = new Date(lockUntil).getTime() - new Date().getTime();
       if (remaining > 0) {
-        setLockMessage(`Acesso bloqueado neste dispositivo. Tente em ${Math.ceil(remaining / 60000)} min.`);
+        setLockMessage(`Bloqueado. Tente em ${Math.ceil(remaining / 60000)} min.`);
         return true;
-      } else {
-        localStorage.removeItem(`ch_lock_until_${deviceId}`);
-        setLockMessage('');
       }
+      localStorage.removeItem(`ch_lock_until_${deviceId}`);
+      setLockMessage('');
     }
     return false;
   };
@@ -47,13 +45,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // 2. Validar usando a RPC (compara texto plano '123' com hash do banco)
+      // 1. Chama sua RPC que valida e-mail e senha na sua tabela 'usuarios'
       const { data: users, error } = await supabase.rpc('login_seguro', {
         email_input: email,
         senha_input: senha
       });
 
-      // O retorno da RPC vem como uma lista de objetos
+      // Pega o primeiro usuário retornado
       const user = users && users.length > 0 ? users[0] : null;
 
       if (error || !user) {
@@ -61,25 +59,37 @@ export default function Login() {
         return;
       }
 
-      // SUCESSO: Limpa bloqueios do dispositivo
+      // SUCESSO: Limpa bloqueios
       const deviceId = getDeviceKey();
       localStorage.removeItem(`ch_attempts_${deviceId}`);
       localStorage.removeItem(`ch_lock_until_${deviceId}`);
 
+     
+
+
+      // 2. SALVAMENTO DA SESSÃO: Guardamos o objeto do usuário para usar depois
       const sessionData = {
         id: user.id,
         nome: user.nome,
         email: user.email,
         perfil: user.perfil,
         condominio_id: user.condominio_id,
+        // Adicione esta linha se sua tabela usuários tiver o nome do condomínio via JOIN na RPC
+        nome_condominio: user.nome_condominio || 'Meu Condomínio', 
         login_at: new Date().toISOString()
       };
 
       localStorage.setItem('cityhouse_session', JSON.stringify(sessionData));
-      navigate('/');
+
+      
+     
+
+
+      // Redireciona
+      navigate('/servicos');
 
     } catch (err) {
-      alert('Erro na conexão.');
+      alert('Erro na conexão com o banco de dados.');
     } finally {
       setLoading(false);
     }
@@ -88,20 +98,15 @@ export default function Login() {
   const handleFailure = () => {
     const deviceId = getDeviceKey();
     const attemptKey = `ch_attempts_${deviceId}`;
-    const lockKey = `ch_lock_until_${deviceId}`;
-
     let attempts = parseInt(localStorage.getItem(attemptKey) || '0') + 1;
     localStorage.setItem(attemptKey, attempts);
 
     if (attempts >= 5) {
-      const multiplier = Math.pow(2, attempts - 5);
-      const minutes = 10 * multiplier;
-      const until = new Date(new Date().getTime() + minutes * 60000).toISOString();
-
-      localStorage.setItem(lockKey, until);
-      setLockMessage(`Muitas tentativas neste dispositivo. Bloqueado por ${minutes} minutos.`);
+      const until = new Date(new Date().getTime() + 10 * 60000).toISOString();
+      localStorage.setItem(`ch_lock_until_${deviceId}`, until);
+      setLockMessage(`Muitas tentativas. Bloqueado por 10 minutos.`);
     } else {
-      alert(`Senha incorreta! Tentativa ${attempts} de 5.`);
+      alert(`E-mail ou senha incorretos! Tentativa ${attempts} de 5.`);
     }
     setLoading(false);
   };

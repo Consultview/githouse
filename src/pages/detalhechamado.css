@@ -1,0 +1,247 @@
+/* detalhechamado.css */
+
+/* 1. IMPORTAÇÃO DOS ESTILOS DA LISTA PARA O CARD SER IDÊNTICO */
+@import url('./chamados.css');
+
+/* 2. ESTRUTURA DA PÁGINA E SIDEBAR */
+.dc-app-container {
+  display: flex;
+  background: #f1f5f9; /* Fundo cinza claro padrão SaaS */
+  min-height: 100vh;
+}
+
+.dc-main-content {
+  flex: 1;
+  margin-left: 260px; /* Largura exata para não ficar atrás da sidebar */
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .dc-main-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+}
+
+.dc-page-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* 3. HEADER DA PÁGINA */
+.dc-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.dc-header-flex h1 {
+  font-size: 1.8rem;
+  color: #1e293b; /* Texto escuro visível */
+  margin: 0;
+}
+
+.dc-btn-back-top {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dc-btn-back-top:hover {
+  background: #f8fafc;
+  color: #2563eb;
+}
+
+/* 4. AJUSTES NO CARD (ESTILO LISTA) */
+.condo-card {
+  margin-bottom: 25px;
+  width: 100%; /* Garante que o card ocupe a largura toda */
+}
+
+.dc-relato-visual {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 5px solid #2563eb;
+}
+
+.dc-relato-visual label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.dc-relato-visual p {
+  margin: 0;
+  color: #1e293b; /* Texto do relato visível */
+  line-height: 1.6;
+}
+
+.dc-img-preview-card {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+/* 5. CHAT TÉCNICO (ESTILO WHATSAPP) */
+.dc-card-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  margin-top: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.dc-card-label {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dc-chat-bg {
+  background: #e5ddd5 url('https://githubusercontent.com');
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.dc-msg {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.dc-msg-sent {
+  align-self: flex-end;
+  background: #dcf8c6;
+  border-top-right-radius: 0;
+}
+
+.dc-msg-received {
+  align-self: flex-start;
+  background: #fff;
+  border-top-left-radius: 0;
+}
+
+.dc-msg-user {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #075e54;
+  margin-bottom: 4px;
+}
+
+.dc-msg p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.dc-msg-time {
+  font-size: 0.6rem;
+  color: #999;
+  float: right;
+  margin-top: 5px;
+}
+
+/* 6. FORMULÁRIO DE GESTÃO */
+.dc-grid-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.dc-item-info label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.dc-select, .dc-textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  color: #1e293b; /* Cor do texto dentro dos campos */
+  font-weight: 600;
+  outline: none;
+  transition: 0.2s;
+}
+
+.dc-select:focus, .dc-textarea:focus {
+  border-color: #2563eb;
+}
+
+.dc-textarea {
+  min-height: 100px;
+  margin-top: 10px;
+}
+
+/* 7. BOTÕES DE AÇÃO */
+.dc-actions-row {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.dc-btn-save {
+  flex: 2;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 18px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.dc-btn-save:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.dc-btn-back {
+  flex: 1;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dc-btn-back:hover {
+  background: #e2e8f0;
+}

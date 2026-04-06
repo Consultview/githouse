@@ -10,9 +10,11 @@ export default function Condominios() {
   const [user, setUser] = useState(null);
   const [condominios, setCondominios] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAdding, setIsAdding] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false); // Estado para o menu
+  const [menuOpen, setMenuOpen] = useState(false);
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [novoCondo, setNovoCondo] = useState({
     nome: '', cnpj: '', email_contato: '', telefone: '',
@@ -41,9 +43,33 @@ export default function Condominios() {
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }
 
+  const handleOpenModal = (condo = null) => {
+    if (condo) {
+      setEditingId(condo.id);
+      setNovoCondo(condo);
+    } else {
+      setEditingId(null);
+      setNovoCondo({
+        nome: '', cnpj: '', email_contato: '', telefone: '',
+        cep: '', endereco: '', numero: '', bairro: '', cidade: '', estado: '',
+        status: true
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  async function toggleStatus(id, currentStatus) {
+    try {
+      const { error } = await supabase.from('condominios').update({ status: !currentStatus }).eq('id', id);
+      if (error) throw error;
+      fetchCondominios();
+    } catch (err) { alert("Erro ao alterar status"); }
+  }
+
   async function handleSave(e) {
     if (e) e.preventDefault();
     setSaving(true);
+    
     const dadosLimpos = {
       ...novoCondo,
       nome: novoCondo.nome.toUpperCase(),
@@ -55,11 +81,16 @@ export default function Condominios() {
       cidade: novoCondo.cidade.toUpperCase(),
       estado: novoCondo.estado.toUpperCase()
     };
+
     try {
-      const { error } = await supabase.from('condominios').insert([dadosLimpos]);
-      if (error) throw error;
-      setIsAdding(false);
-      setNovoCondo({ nome: '', cnpj: '', email_contato: '', telefone: '', cep: '', endereco: '', numero: '', bairro: '', cidade: '', estado: '', status: true });
+      if (editingId) {
+        const { error } = await supabase.from('condominios').update(dadosLimpos).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('condominios').insert([dadosLimpos]);
+        if (error) throw error;
+      }
+      setIsModalOpen(false);
       fetchCondominios();
     } catch (err) { alert("Erro ao salvar"); } finally { setSaving(false); }
   }
@@ -69,52 +100,54 @@ export default function Condominios() {
   return (
     <div className="ch-app-wrapper">
       <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
-      
       <main className="ch-main-content">
         <div className="page-container">
-          
-          {isAdding ? (
-            <FormCondominio
-              novoCondo={novoCondo} setNovoCondo={setNovoCondo}
-              onSave={handleSave} onCancel={() => setIsAdding(false)} saving={saving}
-            />
-          ) : (
-            <div className="data-display-area">
-              <div className="top-actions">
-                <button className="btn-add-condo" onClick={() => setIsAdding(true)}>
-                  + Novo Condomínio
-                </button>
-              </div>
+          <div className="data-display-area">
+            <div className="top-actions">
+              <button className="btn-add-condo" onClick={() => handleOpenModal()}>+ Novo Condomínio</button>
+            </div>
 
-              <div className="condo-grid">
-                {condominios.map((c) => (
-                  <div key={c.id} className="condo-card">
-                    <div className="card-header">
-                      <span className="card-id">#{formatID(c.id)}</span>
-                      <span className={`status-pill ${c.status ? 'active' : 'inactive'}`}>
-                        {c.status ? 'ATIVO' : 'INATIVO'}
-                      </span>
+            <div className="condo-grid">
+              {condominios.map((c) => (
+                <div key={c.id} className="condo-card">
+                  <div className="card-header">
+                    <span className="card-id">#{formatID(c.id)}</span>
+                    <button 
+                      className={`status-pill ${c.status ? 'active' : 'inactive'}`}
+                      onClick={() => toggleStatus(c.id, c.status)}
+                    >
+                      {c.status ? 'ATIVO' : 'INATIVO'}
+                    </button>
+                  </div>
+                  <div className="card-body">
+                    <div className="name-cell">
+                      <strong>{c.nome}</strong>
+                      <span>{maskCNPJ(c.cnpj)}</span>
                     </div>
-                    
-                    <div className="card-body">
-                      <div className="name-cell">
-                        <strong>{c.nome}</strong>
-                        <span>{maskCNPJ(c.cnpj)}</span>
-                      </div>
-
-                      <div className="info-grid">
-                        <div className="info-block">
-                          <label>Telefone</label>
-                          <p>{maskPhone(c.telefone)}</p>
-                        </div>
-                        <div className="info-block">
-                          <label>Bairro</label>
-                          <p>{c.bairro || '-'}</p>
-                        </div>
-                      </div>
+                    <div className="info-grid">
+                      <div className="info-block"><label>Telefone</label><p>{maskPhone(c.telefone)}</p></div>
+                      <div className="info-block"><label>Bairro</label><p>{c.bairro || '-'}</p></div>
                     </div>
                   </div>
-                ))}
+                  <div className="card-footer">
+                    <button className="btn-view" onClick={() => handleOpenModal(c)}>✏️ Editar Detalhes</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {isModalOpen && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h2>{editingId ? 'Editar Condomínio' : 'Novo Condomínio'}</h2>
+                  <button className="btn-close" onClick={() => setIsModalOpen(false)}>&times;</button>
+                </div>
+                <FormCondominio
+                  novoCondo={novoCondo} setNovoCondo={setNovoCondo}
+                  onSave={handleSave} onCancel={() => setIsModalOpen(false)} saving={saving}
+                />
               </div>
             </div>
           )}

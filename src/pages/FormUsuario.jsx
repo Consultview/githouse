@@ -1,9 +1,8 @@
 import React from 'react';
-import './form.css'; // CERTIFIQUE-SE QUE O ARQUIVO SE CHAMA form.css
+import './form.css';
 
-export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, saving, condominios = [] }) {
-  
-  // Proteção: Se novoUser não existir ainda, evita que a tela fique branca
+export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, saving, condominios = [], isViewOnly = false }) {
+
   if (!novoUser) return null;
 
   const perfilNome = { 1: 'Admin', 2: 'Síndico', 3: 'Funcionário', 4: 'Morador' };
@@ -22,11 +21,16 @@ export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, s
     setNovoUser({ ...novoUser, telefone: value });
   };
 
-  return (
-    <section className="form-container anim-up">
-      <form onSubmit={onSave} className="modern-form">
-        <h2 className="form-title">Novo Usuário</h2>
+  const handleChange = (e) => {
+    let { name, value } = e.target;
+    if (name === 'status') value = value === 'true';
+    setNovoUser({ ...novoUser, [name]: value });
+  };
 
+  return (
+    <form onSubmit={onSave} className="modern-form anim-up">
+      {/* fieldset disabled trava todos os campos se isViewOnly for true */}
+      <fieldset disabled={isViewOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
         <div className="form-grid">
           <div className="input-group span-2">
             <input type="text" required placeholder=" " className="uppercase"
@@ -55,10 +59,10 @@ export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, s
           </div>
 
           <div className="input-group">
-            <input type="password" required placeholder=" " value={novoUser.senha || ''}
+            <input type="password" required={!novoUser.id} placeholder=" " value={novoUser.senha || ''}
               onChange={e => setNovoUser({...novoUser, senha: e.target.value})}
             />
-            <label>Senha Provisória *</label>
+            <label>{novoUser.id ? 'Senha (deixe vazio p/ manter)' : 'Senha Provisória *'}</label>
           </div>
 
           <div className="input-group">
@@ -80,26 +84,39 @@ export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, s
           </div>
 
           <div className="input-group flex-row span-2">
-            <div className="sub-group">
+            <div className="sub-group flex-1">
                <input type="text" placeholder=" " className="uppercase" value={novoUser.bloco || ''}
                  onChange={e => setNovoUser({...novoUser, bloco: e.target.value.toUpperCase()})} />
                <label>Bloco / Rua</label>
             </div>
-            <div className="sub-group">
+            <div className="sub-group flex-1">
                <input type="text" placeholder=" " className="uppercase" value={novoUser.numero_casa || ''}
                  onChange={e => setNovoUser({...novoUser, numero_casa: e.target.value.toUpperCase()})} />
                <label>Nº Unidade</label>
             </div>
           </div>
-        </div>
 
-        <div className="form-footer">
-          <button type="button" className="btn-secondary" onClick={onCancel}>CANCELAR</button>
-          <button type="submit" className="btn-primary" disabled={saving}>
-            {saving ? "SALVANDO..." : "SALVAR CADASTRO"}
-          </button>
+          {/* CAMPO STATUS */}
+          <div className="input-group span-2">
+            <select name="status" value={novoUser.status} onChange={handleChange} className="status-select">
+              <option value="true">ATIVO</option>
+              <option value="false">INATIVO</option>
+            </select>
+            <label>Situação do Usuário</label>
+          </div>
         </div>
-      </form>
-    </section>
+      </fieldset>
+
+      <div className="form-footer">
+        <button type="button" className="btn-secondary" onClick={onCancel}>
+          {isViewOnly ? "FECHAR" : "CANCELAR"}
+        </button>
+        {!isViewOnly && (
+          <button type="submit" className="btn-primary" disabled={saving}>
+            {saving ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
+          </button>
+        )}
+      </div>
+    </form>
   );
 }

@@ -11,20 +11,20 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
   };
 
   const goHome = () => {
-    navigate('/');
+    navigate('/servicos');
     if (isOpen) toggleMenu();
   };
 
   const allMenuItems = [
-    { path: '/', label: 'Início', roles: [1, 2, 3, 4] },
+
+    { path: '/servicos', label: 'Serviços', roles: [1, 2, 3, 4] },
     { path: '/dashboard', label: 'Dashboard', roles: [1, 2, 3, 4] },
-    { path: '/condominios', label: 'Condomínios', roles: [1] },
-    { path: '/usuarios', label: 'Usuários/Empresas', roles: [1, 2] },
-    { path: '/chamados', label: 'Chamados (Tickets)', roles: [1, 2, 3, 4] },
-    { path: '/imoveis', label: 'Imóveis', roles: [1, 2] },
-    { path: '/financeiro', label: 'Financeiro', roles: [1] },
+    { path: '/chamados', label: 'Chamados (Tickets)', roles: [1, 2, 3,     4] },
     { path: '/reservas', label: 'Reservas', roles: [1, 2, 4] },
+    { path: '/condominios', label: 'Condomínios', roles: [1] },
+    { path: '/usuarios', label: 'Usuários', roles: [1, 2] }, 
     { path: '/configuracoes', label: 'Configurações', roles: [1] },
+    { path: '/', label: 'Sobre', roles: [1, 2, 3, 4] },
   ];
 
   const filteredMenu = allMenuItems.filter(item => {

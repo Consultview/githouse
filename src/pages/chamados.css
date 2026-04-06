@@ -1,178 +1,173 @@
-/* Reutilizando as bases de layout anteriores */
-.admin-layout { display: flex; background: #f4f7fa; min-height: 100vh; }
-.admin-main { flex: 1; padding: 100px 40px 40px 280px; width: 100%; box-sizing: border-box; }
 
-/* Grid de Detalhes (2 colunas) */
-.ticket-detail-grid {
+/* chamados.css */
+
+
+
+.stats-summary-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 25px;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
-
-
-
-
-
-/* Indicadores de Prioridade */
-.prio-indicator {
-    font-size: 0.7rem;
-    font-weight: 800;
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-}
-
-.prio-high {
-    color: #991b1b;
-    background: #fee2e2;
-    border-color: #fecaca;
-}
-
-.prio-medium {
-    color: #92400e;
-    background: #fef3c7;
-    border-color: #fde68a;
-}
-
-.prio-low {
-    color: #1e40af;
-    background: #dbeafe;
-    border-color: #bfdbfe;
-}
-
-/* Ajuste do ID Formatado */
-.text-id {
-    font-family: 'Monaco', 'Consolas', monospace;
-    font-weight: 700;
-    color: #2563eb;
-    background: #eff6ff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-}
-
-/* Status adicionais para o banco completo */
-.status-concluido { background: #dcfce7; color: #166534; }
-.status-pendente { background: #fff7ed; color: #9a3412; }
-.status-cancelado { background: #f1f5f9; color: #475569; }
-
-/* Sidebar de Gestão */
-.info-card {
+.stat-card {
   background: white;
-  padding: 25px;
+  padding: 20px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  border-bottom: 4px solid #ddd;
 }
 
-.info-card label {
-  display: block;
+.stat-label { font-size: 0.85rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+.stat-value { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin: 5px 0 0 0; }
+.stat-icon { font-size: 2rem; opacity: 0.3; }
+
+/* Cores dos cards */
+.sc-aberto { border-color: #2563eb; }
+.sc-concluido { border-color: #16a34a; }
+.sc-cancelado { border-color: #ef4444; }
+
+
+.page-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+/* Status Badges - Cores Diferenciadas */
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #64748b;
   text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.info-card select {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1.5px solid #e2e8f0;
-  margin-bottom: 20px;
-  background: #f8fafc;
-}
-
-.btn-save-ticket {
-  width: 100%;
-  background: #2563eb;
-  color: white;
   border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
 }
 
-/* Área do Chat */
-.ticket-chat-area {
+.st-aberto { 
+  background-color: #e3f2fd; 
+  color: #1976d2; 
+}
+
+.st-progresso { 
+  background-color: #fff3e0; 
+  color: #ef6c00; 
+}
+
+.st-concluido { 
+  background-color: #e8f5e9; 
+  color: #2e7d32; 
+}
+
+.st-cancelado { 
+  background-color: #ffebee; 
+  color: #c62828; 
+}
+
+/* Prioridades */
+.pri-level {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pri-level.alta { color: #d32f2f; }
+.pri-level.media { color: #f57c00; }
+.pri-level.baixa { color: #388e3c; }
+
+/* Estrutura do Card (Mantendo o padrão Condominios) */
+.condo-card {
   background: white;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  height: 650px;
-}
-
-.chat-history {
-  flex: 1;
-  padding: 25px;
-  overflow-y: auto;
-  background: #fcfdfe;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   gap: 15px;
+  border: 1px solid #eee;
+  transition: transform 0.2s ease;
 }
 
-.msg-bubble {
-  padding: 15px;
-  border-radius: 12px;
-  max-width: 80%;
-  font-size: 0.95rem;
-  line-height: 1.5;
+.condo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
 
-.msg-bubble.user { background: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
-.msg-bubble.system { background: #eff6ff; color: #1e40af; font-size: 0.8rem; align-self: center; text-align: center; }
-
-.chat-input {
-  padding: 20px;
-  border-top: 1px solid #f1f5f9;
+.card-header {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.chat-input textarea {
+.card-id {
+  font-family: monospace;
+  color: #888;
+  font-weight: bold;
+}
+
+.name-cell strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.name-cell span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  padding: 15px 0;
+  border-top: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.info-block label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 5px;
+  letter-spacing: 0.5px;
+}
+
+.info-block p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #444;
+  font-weight: 500;
+}
+
+.card-footer {
+  margin-top: auto;
+}
+
+.btn-view {
   width: 100%;
-  height: 80px;
-  padding: 15px;
-  border-radius: 10px;
-  border: 1.5px solid #e2e8f0;
-  resize: none;
-}
-
-.btn-send-msg {
-  align-self: flex-end;
-  background: #0f172a;
-  color: white;
-  border: none;
-  padding: 10px 25px;
-  border-radius: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #007bff;
+  background: transparent;
+  color: #007bff;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* Status Badges */
-.status-badge { padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-.status-aberto { background: #dcfce7; color: #166534; }
-.status-em-atendimento { background: #e0e7ff; color: #3730a3; }
-.status-encerrado { background: #f1f5f9; color: #475569; }
+.btn-view:hover {
+  background: #007bff;
+  color: white;
+}
 
-/* Tabela e Botões (conforme padronizado antes) */
-.table-container { background: white; border-radius: 12px; border: 1px solid #e3e8ee; }
-.ticket-table { width: 100%; border-collapse: collapse; }
-.ticket-table th { padding: 18px 24px; text-align: left; background: #f8fafc; font-size: 0.75rem; color: #64748b; border-bottom: 1px solid #e2e8ee; }
-.ticket-table td { padding: 18px 24px; border-bottom: 1px solid #f1f5f9; }
-.btn-view-ticket { background: none; border: none; color: #64748b; cursor: pointer; transition: 0.2s; }
-.btn-view-ticket:hover { color: #2563eb; }
-
-/* Responsividade */
-@media (max-width: 1024px) {
-  .admin-main { padding-left: 20px; padding-top: 80px; }
-  .ticket-detail-grid { grid-template-columns: 1fr; }
+.loader-container, .empty-message {
+  text-align: center;
+  padding: 50px;
+  color: #888;
+  grid-column: 1 / -1; /* Ocupa a largura toda no grid */
 }

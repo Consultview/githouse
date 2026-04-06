@@ -1,0 +1,83 @@
+.sh-layout-root {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.sh-container {
+  flex: 1;
+  padding: 80px 40px; 
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.sh-header-clean {
+  margin-bottom: 50px;
+}
+
+.sh-badge-large {
+  background: #f1f5f9;
+  color: #1e293b;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: fit-content;
+}
+
+.sh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+.sh-card {
+  text-decoration: none;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sh-card:hover {
+  transform: translateY(-4px);
+  border-color: #cbd5e1;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+}
+
+.sh-card-name {
+  font-size: 1.2rem;
+  font-weight: 750;
+  color: #1e293b;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.sh-card-line {
+  width: 25px;
+  height: 4px;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.sh-card:hover .sh-card-line {
+  width: 60px;
+}
+
+@media (max-width: 1024px) {
+  .sh-container {
+    padding-top: 100px; 
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
