@@ -1,69 +1,39 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import './home.css'; // Reutilizando seus estilos de cards
+import './styles/servicoshome.css'; // Usando o mesmo CSS do primeiro exemplo
 
 export default function ReservasHome({ user }) {
-  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const modulos = [
-    {
-      titulo: "Minhas Reservas",
-      descricao: "Visualize, altere ou cancele seus agendamentos atuais.",
-      icon: "📅",
-      rota: "/reservas/lista"
-    },
-    {
-      titulo: "Nova Reserva",
-      descricao: "Reserve salão de festas, churrasqueira ou quadras.",
-      icon: "➕",
-      rota: "/reservas/novo"
-    },
-    {
-      titulo: "Gestão de Espaços",
-      descricao: "Cadastre novos locais e defina regras de uso (Admin).",
-      icon: "🏗️",
-      rota: "/reservas/locais"
-    },
-    {
-      titulo: "Lista de Convidados",
-      descricao: "Envie a lista de nomes para a portaria liberar o acesso.",
-      icon: "👥",
-      rota: "/reservas/convidados"
-    }
+    { nome: "Minhas Reservas", rota: "/reservas/lista", cor: "#8b5cf6" },
+    { nome: "Nova Reserva", rota: "/reservas/novo", cor: "#10b981" },
+    { nome: "Gestão de Espaços", rota: "/reservas/locais", cor: "#2563eb" },
+    { nome: "Lista de Convidados", rota: "/reservas/convidados", cor: "#f59e0b" }
   ];
 
   return (
-    <div className="ch-app-wrapper">
-      <Sidebar user={user} />
-      
-      <main className="ch-main-content">
-        <section className="hero-section">
-          <div className="container">
-            <div className="marketing-hero">
-              <h3>Módulo de Reservas</h3>
-              <p>Gerencie os espaços comuns do condomínio de forma rápida e organizada.</p>
-            </div>
-          </div>
-        </section>
+    <div className="sh-layout-root">
+      <Sidebar 
+        user={user} 
+        isOpen={menuOpen} 
+        toggleMenu={() => setMenuOpen(!menuOpen)} 
+      />
 
-        <section className="features-grid container">
-          {modulos.map((item, index) => (
-            <div 
-              key={index} 
-              className="feature-card" 
-              onClick={() => navigate(item.rota)}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="icon">{item.icon}</div>
-              <h3>{item.titulo}</h3>
-              <p>{item.descricao}</p>
-              <button className="btn-acessar" style={{marginTop: '15px', border: 'none', background: '#e67e22', color: 'white', padding: '8px 15px', borderRadius: '4px'}}>
-                Acessar
-              </button>
-            </div>
+      <main className="sh-container">
+        <header className="sh-header-clean">
+          <div className="sh-badge-large">Módulo de Reservas</div>
+        </header>
+
+        <div className="sh-grid">
+          {modulos.map((m, i) => (
+            <Link key={i} to={m.rota} className="sh-card">
+              <span className="sh-card-name">{m.nome}</span>
+              <div className="sh-card-line" style={{ backgroundColor: m.cor }}></div>
+            </Link>
           ))}
-        </section>
+        </div>
       </main>
     </div>
   );

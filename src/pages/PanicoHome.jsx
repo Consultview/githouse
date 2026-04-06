@@ -1,72 +1,53 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import './home.css';
+import './styles/servicoshome.css';
+import { useAuth } from '../hooks/useAuth';
 
-export default function PanicoHome({ user }) {
-  const navigate = useNavigate();
+export default function PanicoHome() {
+const { user, loadingAuth } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const alertas = [
-    {
-      titulo: "Emergência Médica",
-      descricao: "Solicitar ajuda imediata para mal-estar, quedas ou acidentes domésticos.",
-      icon: "🚑",
-      rota: "/panico/medico",
-      cor: "#e74c3c"
-    },
-    {
-      titulo: "Invasão / Suspeito",
-      descricao: "Alerta silencioso para a portaria sobre presença estranha ou coação.",
-      icon: "🚨",
-      rota: "/panico/seguranca",
-      cor: "#c0392b"
-    },
-    {
-      titulo: "Incêndio",
-      descricao: "Notificar focos de fumaça ou fogo na unidade ou áreas comuns.",
-      icon: "🔥",
-      rota: "/panico/fogo",
-      cor: "#d35400"
-    },
-    {
-      titulo: "Vazamento de Gás",
-      descricao: "Alerta urgente para evacuação e fechamento de registros.",
-      icon: "🧪",
-      rota: "/panico/gas",
-      cor: "#f39c12"
-    }
+    { nome: "Emergência Médica", rota: "/panico/medico", cor: "#ef4444" },
+    { nome: "Invasão / Suspeito", rota: "/panico/seguranca", cor: "#dc2626" },
+    { nome: "Incêndio", rota: "/panico/fogo", cor: "#f97316" },
+    { nome: "Vazamento de Gás", rota: "/panico/gas", cor: "#f59e0b" }
   ];
 
   return (
-    <div className="ch-app-wrapper">
-      <Sidebar user={user} />
-      <main className="ch-main-content">
-        <section className="hero-section" style={{ background: 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)' }}>
-          <div className="container">
-            <div className="marketing-hero">
-              <h3 style={{ color: '#fff' }}>Central de Emergência</h3>
-              <p style={{ color: '#fff' }}>O uso indevido gera multas. Acione apenas em caso de necessidade real.</p>
-            </div>
-          </div>
-        </section>
+    <div className="sh-layout-root">
+      <Sidebar 
+        user={user} 
+        isOpen={menuOpen} 
+        toggleMenu={() => setMenuOpen(!menuOpen)} 
+      />
 
-        <section className="features-grid container">
-          {alertas.map((item, index) => (
-            <div 
-              key={index} 
-              className="feature-card" 
-              onClick={() => navigate(item.rota)}
-              style={{ cursor: 'pointer', border: `2px solid ${item.cor}`, textAlign: 'center' }}
-            >
-              <div className="icon" style={{ fontSize: '3rem' }}>{item.icon}</div>
-              <h3 style={{ color: item.cor }}>{item.titulo}</h3>
-              <p>{item.descricao}</p>
-              <button style={{ background: item.cor, color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '5px', marginTop: '10px', fontWeight: 'bold' }}>
-                ACIONAR AGORA
-              </button>
-            </div>
+      <main className="sh-container">
+        <header className="sh-header-clean">
+          <div className="sh-badge-large" style={{ backgroundColor: '#dc2626', color: 'white' }}>
+            Central de Emergência
+          </div>
+        </header>
+
+        <div className="sh-grid">
+          {alertas.map((a, i) => (
+            <Link key={i} to={a.rota} className="sh-card">
+              <span className="sh-card-name">{a.nome}</span>
+              <div className="sh-card-line" style={{ backgroundColor: a.cor }}></div>
+            </Link>
           ))}
-        </section>
+        </div>
+        
+        <p style={{ 
+          marginTop: '20px', 
+          fontSize: '0.85rem', 
+          color: '#64748b', 
+          textAlign: 'center',
+          fontWeight: '500' 
+        }}>
+          O uso indevido gera multas. Acione apenas em caso de necessidade real.
+        </p>
       </main>
     </div>
   );

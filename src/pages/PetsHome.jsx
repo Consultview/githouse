@@ -1,66 +1,42 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import './home.css';
+import './styles/servicoshome.css'; 
+import { useAuth } from	'../hooks/useAuth';
 
-export default function PetsHome({ user }) {
-  const navigate = useNavigate();
+
+export default function PetsHome() {
+	const { user, loadingAuth } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const acoes = [
-    {
-      titulo: "Meus Pets",
-      descricao: "Cadastre fotos, raças e informações de saúde dos seus animais.",
-      icon: "🐕",
-      rota: "/pets/cadastro"
-    },
-    {
-      titulo: "Carteira de Vacinação",
-      descricao: "Mantenha o histórico de vacinas atualizado para controle do prédio.",
-      icon: "💉",
-      rota: "/pets/vacinas"
-    },
-    {
-      titulo: "Pet Perdido/Achado",
-      descricao: "Emita um alerta para todos os vizinhos se seu pet fugiu.",
-      icon: "🔍",
-      rota: "/pets/alertas"
-    },
-    {
-      titulo: "Regras do Pet",
-      descricao: "Consulte as áreas permitidas e normas de limpeza e circulação.",
-      icon: "📜",
-      rota: "/pets/normas"
-    }
+    { nome: "Meus Pets", rota: "/pets/cadastro", cor: "#06b6d4" },
+    { nome: "Carteira de Vacinação", rota: "/pets/vacinas", cor: "#10b981" },
+    { nome: "Pet Perdido/Achado", rota: "/pets/alertas", cor: "#ef4444" },
+    { nome: "Regras do Pet", rota: "/pets/normas", cor: "#64748b" }
   ];
 
   return (
-    <div className="ch-app-wrapper">
-      <Sidebar user={user} />
-      <main className="ch-main-content">
-        <section className="hero-section">
-          <div className="container">
-            <div className="marketing-hero">
-              <h3>Espaço Pet CityHouse</h3>
-              <p>Segurança para o seu melhor amigo e harmonia para o condomínio.</p>
-            </div>
-          </div>
-        </section>
+    <div className="sh-layout-root">
+      <Sidebar 
+        user={user} 
+        isOpen={menuOpen} 
+        toggleMenu={() => setMenuOpen(!menuOpen)} 
+      />
 
-        <section className="features-grid container">
-          {acoes.map((item, index) => (
-            <div 
-              key={index} 
-              className="feature-card" 
-              onClick={() => navigate(item.rota)}
-              style={{ cursor: 'pointer', borderTop: '4px solid #27ae60' }}
-            >
-              <div className="icon">{item.icon}</div>
-              <h3>{item.titulo}</h3>
-              <p>{item.descricao}</p>
-              <span style={{ color: '#27ae60', fontWeight: 'bold' }}>Acessar →</span>
-            </div>
+      <main className="sh-container">
+        <header className="sh-header-clean">
+          <div className="sh-badge-large">Espaço Pet CityHouse</div>
+        </header>
+
+        <div className="sh-grid">
+          {acoes.map((a, i) => (
+            <Link key={i} to={a.rota} className="sh-card">
+              <span className="sh-card-name">{a.nome}</span>
+              <div className="sh-card-line" style={{ backgroundColor: a.cor }}></div>
+            </Link>
           ))}
-        </section>
+        </div>
       </main>
     </div>
   );

@@ -1,68 +1,41 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import {useAuth} from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
-import './home.css';
+import './styles/servicoshome.css';
 
-export default function PortariaHome({ user }) {
-  const navigate = useNavigate();
+export default function PortariaHome() {
+  const {user, loadingAuth } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const acoesAcesso = [
-    {
-      titulo: "Registrar Entrada",
-      descricao: "Check-in de visitantes, prestadores de serviço ou entregas.",
-      icon: "🚗",
-      rota: "/portaria/entrada"
-    },
-    {
-      titulo: "Log de Acessos",
-      descricao: "Histórico detalhado de quem entrou e saiu do condomínio.",
-      icon: "📋",
-      rota: "/portaria/historico"
-    },
-    {
-      titulo: "Pré-Autorizados",
-      descricao: "Lista de visitantes liberados antecipadamente pelos moradores.",
-      icon: "✅",
-      rota: "/portaria/autorizados"
-    },
-    {
-      titulo: "Encomendas e Pacotes",
-      descricao: "Gestão de recebimento de mercadorias e avisos aos moradores.",
-      icon: "📦",
-      rota: "/portaria/encomendas"
-    }
+    { nome: "Registrar Entrada", rota: "/portaria/entrada", cor: "#10b981" },
+    { nome: "Log de Acessos", rota: "/portaria/historico", cor: "#2563eb" },
+    { nome: "Pré-Autorizados", rota: "/portaria/autorizados", cor: "#8b5cf6" },
+    { nome: "Encomendas e Pacotes", rota: "/portaria/encomendas", cor: "#f59e0b" }
   ];
 
   return (
-    <div className="ch-app-wrapper">
-      <Sidebar user={user} />
-      
-      <main className="ch-main-content">
-        <section className="hero-section">
-          <div className="container">
-            <div className="marketing-hero">
-              <span className="badge-live" style={{background: '#2ecc71', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem'}}>Monitoramento Ativo</span>
-              <h3 style={{marginTop: '10px'}}>Controle de Portaria</h3>
-              <p>Segurança integrada para o fluxo de pessoas e veículos.</p>
-            </div>
-          </div>
-        </section>
+    <div className="sh-layout-root">
+      <Sidebar 
+        user={user} 
+        isOpen={menuOpen} 
+        toggleMenu={() => setMenuOpen(!menuOpen)} 
+      />
 
-        <section className="features-grid container">
-          {acoesAcesso.map((item, index) => (
-            <div 
-              key={index} 
-              className="feature-card" 
-              onClick={() => navigate(item.rota)}
-              style={{ cursor: 'pointer', borderLeft: '4px solid #2980b9' }}
-            >
-              <div className="icon">{item.icon}</div>
-              <h3>{item.titulo}</h3>
-              <p>{item.descricao}</p>
-              <span style={{color: '#2980b9', fontWeight: 'bold', fontSize: '0.9rem'}}>Abrir Módulo →</span>
-            </div>
+      <main className="sh-container">
+        <header className="sh-header-clean">
+          <div className="sh-badge-large">Controle de Portaria</div>
+        </header>
+
+        <div className="sh-grid">
+          {acoesAcesso.map((a, i) => (
+            <Link key={i} to={a.rota} className="sh-card">
+              <span className="sh-card-name">{a.nome}</span>
+              <div className="sh-card-line" style={{ backgroundColor: a.cor }}></div>
+            </Link>
           ))}
-        </section>
+        </div>
       </main>
     </div>
   );

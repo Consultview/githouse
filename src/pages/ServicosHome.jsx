@@ -37,7 +37,10 @@ export default function ServicosHome() {
     { nome: "Avisos", rota: "/avisos", cor: "#ef4444" },
     { nome: "Pets", rota: "/pets", cor: "#06b6d4" },
     { nome: "Emergências", rota: "/panico", cor: "#dc2626" },
-    { nome: "Usuários", rota: "/usuarios", cor: "#64748b" }
+    
+    { nome: "Usuários", rota: "/usuarios", cor: "#64748b" },
+
+        { nome: "Configurações", rota: "/configuracoes", cor: "#f59e0b" }
   ];
 
   if (!user) return null;

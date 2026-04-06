@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
 import FormChamado from './FormChamado';
+import { useAuth } from '../hooks/useAuth'; // ✅ NOVO
 import './chamados.css';
 
 export default function Chamados() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+
+  const { user, loadingAuth } = useAuth(); // ✅ NOVO
+
   const [chamados, setChamados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -23,15 +26,16 @@ export default function Chamados() {
     'CANCELADO': { class: 'st-cancelado', label: 'Cancelado' }
   };
 
+  // ✅ Agora depende do user vindo do hook
   useEffect(() => {
-    const sessionData = localStorage.getItem('cityhouse_session');
-    if (sessionData) {
-      setUser(JSON.parse(sessionData));
-      fetchChamados();
-    } else {
-      navigate('/login');
+    if (!loadingAuth) {
+      if (!user) {
+        navigate('/login');
+      } else {
+        fetchChamados();
+      }
     }
-  }, [navigate]);
+  }, [user, loadingAuth]);
 
   async function fetchChamados() {
     try {
@@ -50,7 +54,6 @@ export default function Chamados() {
     }
   }
 
-  // Cálculos para os 4 Cards de Resumo
   const totalAbertos = chamados.filter(c => c.status === 'ABERTO').length;
   const totalAndamento = chamados.filter(c => c.status === 'EM_ANDAMENTO').length;
   const totalConcluidos = chamados.filter(c => c.status === 'CONCLUIDO').length;
@@ -64,13 +67,22 @@ export default function Chamados() {
   async function handleSave(dadosForm) {
     try {
       setSaving(true);
+
       if (selectedChamado) {
-        const { error } = await supabase.from('chamados').update(dadosForm).eq('id', selectedChamado.id);
+        const { error } = await supabase
+          .from('chamados')
+          .update(dadosForm)
+          .eq('id', selectedChamado.id);
+
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('chamados').insert([dadosForm]);
+        const { error } = await supabase
+          .from('chamados')
+          .insert([dadosForm]);
+
         if (error) throw error;
       }
+
       setIsModalOpen(false);
       fetchChamados();
     } catch (err) {
@@ -83,16 +95,23 @@ export default function Chamados() {
   const formatID = (id) => id?.toString().padStart(5, '0') || '00000';
   const formatDate = (date) => new Date(date).toLocaleDateString('pt-BR');
 
+  // ✅ Enquanto valida auth, não renderiza nada
+  if (loadingAuth) return null;
+
+  // ✅ Segurança extra
   if (!user) return null;
 
   return (
     <div className="ch-app-wrapper">
-      <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
+      <Sidebar
+        user={user}
+        isOpen={menuOpen}
+        toggleMenu={() => setMenuOpen(!menuOpen)}
+      />
 
       <main className="ch-main-content">
         <div className="page-container">
 
-          {/* 4 CARDS DE RESUMO */}
           <div className="stats-summary-grid">
             <div className="stat-card sc-aberto">
               <div className="stat-info">
@@ -128,7 +147,7 @@ export default function Chamados() {
           </div>
 
           <div className="data-display-area">
-            <div className="top-actions" style={{justifyContent: 'flex-end', marginBottom: '20px'}}>
+            <div className="top-actions" style={{ justifyContent: 'flex-end', marginBottom: '20px' }}>
               <button className="btn-add-condo" onClick={() => handleOpenModal()}>
                 + Abrir Chamado
               </button>
@@ -168,7 +187,10 @@ export default function Chamados() {
                     </div>
 
                     <div className="card-footer">
-                      <button className="btn-view" onClick={() => navigate(`/detalhe/${item.id}`)}>
+                      <button
+                        className="btn-view"
+                        onClick={() => navigate(`/detalhe/${item.id}`)}
+                      >
                         🔍 Acompanhar Chamado
                       </button>
                     </div>
@@ -182,9 +204,19 @@ export default function Chamados() {
             <div className="modal-overlay">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h2>{selectedChamado ? `Chamado #${formatID(selectedChamado.id)}` : 'Novo Chamado'}</h2>
-                  <button className="btn-close" onClick={() => setIsModalOpen(false)}>&times;</button>
+                  <h2>
+                    {selectedChamado
+                      ? `Chamado #${formatID(selectedChamado.id)}`
+                      : 'Novo Chamado'}
+                  </h2>
+                  <button
+                    className="btn-close"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    &times;
+                  </button>
                 </div>
+
                 <FormChamado
                   user={user}
                   chamadoEdicao={selectedChamado}
