@@ -4,7 +4,7 @@ import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
 import FormChamado from './FormChamado';
 import { useAuth } from '../hooks/useAuth'; // ✅ NOVO
-import './chamados.css';
+import './styles/chamados.css';
 
 export default function Chamados() {
   const navigate = useNavigate();

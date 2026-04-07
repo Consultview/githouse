@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import '../styles/sidebar.css';
+import './sidebar.css';
 
 
 export default function Sidebar({ isOpen, toggleMenu, user }) {

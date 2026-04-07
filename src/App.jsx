@@ -21,7 +21,7 @@ import PortariaHome from './pages/PortariaHome';
 import AvisosHome from './pages/AvisosHome';
 import Configuracoes from './pages/Configuracoes';
 
-import './styles/global.css';
+import './global.css';
 
 export default function App() {
   const [user, setUser] = useState(null);

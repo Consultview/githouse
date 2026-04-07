@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
-import './detalhechamado.css';
+import './styles/detalhechamado.css';
 
 export default function DetalheChamado() {
   const { id } = useParams();

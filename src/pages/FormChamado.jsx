@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './../SupabaseClient';
-import './formchamado.css';
+import './styles/formchamado.css';
 
 export default function FormChamado({ onSave, onCancel, saving, user, chamadoEdicao }) {
   const [condominios, setCondominios] = useState([]);

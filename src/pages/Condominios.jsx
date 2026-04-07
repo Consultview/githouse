@@ -4,7 +4,7 @@ import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
 import FormCondominio from './FormCondominio';
 import { useAuth } from '../hooks/useAuth'; // ✅ NOVO
-import './condominios.css';
+import './styles/condominios.css';
 
 export default function Condominios() {
   const navigate = useNavigate();

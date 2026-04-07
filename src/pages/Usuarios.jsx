@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
 import FormUsuario from './FormUsuario';
-import './usuarios.css';
+import './styles/usuarios.css';
 
 export default function Usuarios() {
   const navigate = useNavigate();

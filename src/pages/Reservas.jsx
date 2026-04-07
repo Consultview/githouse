@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import './styles/servicoshome.css'; // Usando o mesmo CSS do primeiro exemplo
+import './styles/servicoshome.css'; 
+import {useAuth} from '../hooks/useAuth';
 
-export default function ReservasHome({ user }) {
+export default function ReservasHome() {
+	const {user, loadingAuth} = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const modulos = [
