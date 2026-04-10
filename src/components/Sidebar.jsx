@@ -1,6 +1,6 @@
+import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import './sidebar.css';
-
 
 export default function Sidebar({ isOpen, toggleMenu, user }) {
   const navigate = useNavigate();
@@ -16,20 +16,24 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
   };
 
   const allMenuItems = [
-
-    { path: '/servicos', label: 'Serviços', roles: [1, 2, 3, 4] },
-    { path: '/dashboard', label: 'Dashboard', roles: [1, 2, 3, 4] },
-    { path: '/chamados', label: 'Chamados (Tickets)', roles: [1, 2, 3,     4] },
-    { path: '/reservas', label: 'Reservas', roles: [1, 2, 4] },
-    { path: '/condominios', label: 'Condomínios', roles: [1] },
-    { path: '/usuarios', label: 'Usuários', roles: [1, 2] }, 
-    { path: '/configuracoes', label: 'Configurações', roles: [1] },
-    { path: '/', label: 'Sobre', roles: [1, 2, 3, 4] },
+    { id: 'serv', path: '/servicos', label: 'Serviços' },
+    { id: 'dash', path: '/dashboard', label: 'Dashboard' },
+    { id: 'cham', path: '/chamados', label: 'Chamados (Tickets)' },
+    { id: 'resv', path: '/reservas', label: 'Reservas' },
+    { id: 'cond', path: '/condominios', label: 'Condomínios' },
+    { id: 'user', path: '/usuarios', label: 'Usuários' },
+    { id: 'aces', path: '/acessos', label: 'Gestão de Acessos' },
+    { id: 'conf', path: '/configuracoes', label: 'Configurações' },
+    { id: 'home', path: '/', label: 'Sobre' },
   ];
 
   const filteredMenu = allMenuItems.filter(item => {
-    if (!user || !user.perfil) return item.path === '/';
-    return item.roles.includes(user.perfil);
+    if (!user) return item.path === '/';
+    if (Number(user.perfil) === 1) return true;
+    if (item.path === '/servicos') return true;
+
+    const permissao = user.permissoes?.find(p => String(p.modulo_id) === String(item.id));
+    return (permissao?.p_ver === true || permissao?.p_ver === 1) || item.path === '/';
   });
 
   return (
@@ -47,20 +51,42 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
 
       <aside className={`ch-sidebar-modern ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-container">
+
           <div className="sidebar-logo-area">
             <div className="logo-full clickable" onClick={goHome}>
               City<span>House</span>
             </div>
           </div>
 
-          <div className="sidebar-user">
-            <div className="user-info">
-              <span className="user-name">{user?.nome || "Visitante"}</span>
-              <span className="user-role">
+          {/* SEÇÃO DO USUÁRIO CENTRALIZADA E SEM ÍCONE */}
+          <div className="sidebar-user" style={{ justifyContent: 'center' }}>
+            <div className="user-info" style={{ textAlign: 'center', width: '100%', alignItems: 'center' }}>
+              
+              {/* NOME DO CONDOMÍNIO ACIMA */}
+              {user?.nome_condominio && (
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  color: '#3498db',
+                  textTransform: 'uppercase',
+                  display: 'block',
+                  marginBottom: '4px',
+                  letterSpacing: '0.5px'
+                }}>
+                  {user.nome_condominio}
+                </span>
+              )}
+
+              <span className="user-name" style={{ display: 'block' }}>
+                {user?.nome || "Usuário"}
+              </span>
+              
+              <span className="user-role" style={{ display: 'block' }}>
                 {user?.perfil === 1 ? "Administrador" :
-                 user?.perfil === 2 ? "Gestor/Síndico" :
-                 user?.perfil === 3 ? "Manutentor" :
-                 user?.perfil === 4 ? "Morador" : "Acesso Público"}
+                 user?.perfil === 2 ? "Suporte" :
+                 user?.perfil === 3 ? "Gestor" :
+                 user?.perfil === 4 ? "Técnico" :
+                 user?.perfil === 5 ? "Morador" : "Acesso Restrito"}
               </span>
             </div>
           </div>
@@ -70,9 +96,7 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({isActive}) =>
-                  `nav-item ${isActive ? 'active' : ''} ${item.path === '/' ? 'nav-inicio' : ''}`
-                }
+                className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => window.innerWidth < 1025 && toggleMenu()}
               >
                 <span className="label">{item.label}</span>
