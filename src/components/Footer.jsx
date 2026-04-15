@@ -19,7 +19,7 @@ export default function Footer() {
             <h4>Contato</h4>
             <p>Telefone: (65) 99354-6706</p>
             <p>E-mail: tijacksonlima@proton.me</p>
-            <p>Endereço: R. Joaquim Alberto Cruvinel Ribeiro, Uberaba - MG</p>
+            <p> Uberaba - MG</p>
           </div>
         </div>
 
