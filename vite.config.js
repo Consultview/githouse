@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true, // Isso permite o acesso via IP na sua rede local
-    
+    host: true,
+    allowedHosts: ['://onrender.com'] // Adicione esta linha
   }
 })
