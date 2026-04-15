@@ -5,7 +5,14 @@ export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, s
 
   if (!novoUser) return null;
 
-  const perfilNome = { 1: 'Admin', 2: 'Síndico', 3: 'Funcionário', 4: 'Morador' };
+  // ✅ Atualizado para os 5 níveis definidos na estrutura profissional
+  const perfilNome = { 
+    1: 'ADM Dono', 
+    2: 'Suporte', 
+    3: 'Síndico', 
+    4: 'Técnico', 
+    5: 'Morador' 
+  };
 
   const handleCPF = (e) => {
     let value = e.target.value.replace(/\D/g, '');
@@ -29,7 +36,6 @@ export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, s
 
   return (
     <form onSubmit={onSave} className="modern-form anim-up">
-      {/* fieldset disabled trava todos os campos se isViewOnly for true */}
       <fieldset disabled={isViewOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
         <div className="form-grid">
           <div className="input-group span-2">
@@ -96,7 +102,6 @@ export default function FormUsuario({ novoUser, setNovoUser, onSave, onCancel, s
             </div>
           </div>
 
-          {/* CAMPO STATUS */}
           <div className="input-group span-2">
             <select name="status" value={novoUser.status} onChange={handleChange} className="status-select">
               <option value="true">ATIVO</option>

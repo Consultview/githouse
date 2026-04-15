@@ -1,23 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
 import FormChamado from './FormChamado';
-import { useAuth } from '../hooks/useAuth'; // ✅ NOVO
+import { useAuth } from '../hooks/useAuth';
+import { useChamados } from '../hooks/useChamados';
+import { chamadosRepo } from '../database/ChamadosRepo';
 import './styles/chamados.css';
 
 export default function Chamados() {
   const navigate = useNavigate();
+  const { user, loadingAuth } = useAuth();
+  const { chamados, loading, fetchChamados, stats } = useChamados(user);
 
-  const { user, loadingAuth } = useAuth(); // ✅ NOVO
-
-  const [chamados, setChamados] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChamado, setSelectedChamado] = useState(null);
+
+  const perms = useMemo(() => {
+    if (!user) return { ver: false, criar: false, editar: false, excluir: false };
+    if (Number(user.perfil) === 1) return { ver: true, criar: true, editar: true, excluir: true };
+
+    const p = user.permissoes?.find(item => item.modulo_id === 'cham');
+    return {
+      ver: !!p?.p_ver,
+      criar: !!p?.p_criar,
+      editar: !!p?.p_editar,
+      excluir: !!p?.p_excluir
+    };
+  }, [user]);
 
   const statusConfig = {
     'ABERTO': { class: 'st-aberto', label: 'Aberto' },
@@ -26,67 +37,43 @@ export default function Chamados() {
     'CANCELADO': { class: 'st-cancelado', label: 'Cancelado' }
   };
 
-  // ✅ Agora depende do user vindo do hook
   useEffect(() => {
     if (!loadingAuth) {
-      if (!user) {
-        navigate('/login');
-      } else {
-        fetchChamados();
-      }
+      if (!user || !perms.ver) navigate('/servicos');
+      else fetchChamados();
     }
-  }, [user, loadingAuth]);
-
-  async function fetchChamados() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('chamados')
-        .select('*, condominios (nome)')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setChamados(data || []);
-    } catch (err) {
-      console.error('Erro ao carregar chamados:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const totalAbertos = chamados.filter(c => c.status === 'ABERTO').length;
-  const totalAndamento = chamados.filter(c => c.status === 'EM_ANDAMENTO').length;
-  const totalConcluidos = chamados.filter(c => c.status === 'CONCLUIDO').length;
-  const totalCancelados = chamados.filter(c => c.status === 'CANCELADO').length;
+  }, [user, loadingAuth, fetchChamados, navigate, perms.ver]);
 
   const handleOpenModal = (chamado = null) => {
+    if (!chamado && !perms.criar) return;
+    if (chamado && !perms.editar) {
+       navigate(`/detalhe/${chamado.id}`);
+       return;
+    }
     setSelectedChamado(chamado);
     setIsModalOpen(true);
   };
 
   async function handleSave(dadosForm) {
+    // 🛡️ REFORÇO DE SEGURANÇA: Bloqueia a execução se não houver permissão
+    const isEdicao = !!selectedChamado;
+    if (isEdicao && !perms.editar) {
+      alert("Acesso Negado: Você não tem permissão para editar.");
+      return;
+    }
+    if (!isEdicao && !perms.criar) {
+      alert("Acesso Negado: Você não tem permissão para criar.");
+      return;
+    }
+
     try {
       setSaving(true);
-
-      if (selectedChamado) {
-        const { error } = await supabase
-          .from('chamados')
-          .update(dadosForm)
-          .eq('id', selectedChamado.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('chamados')
-          .insert([dadosForm]);
-
-        if (error) throw error;
-      }
-
+      await chamadosRepo.save(dadosForm, selectedChamado?.id);
       setIsModalOpen(false);
       fetchChamados();
     } catch (err) {
       alert("Erro ao salvar o chamado.");
+      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -95,62 +82,52 @@ export default function Chamados() {
   const formatID = (id) => id?.toString().padStart(5, '0') || '00000';
   const formatDate = (date) => new Date(date).toLocaleDateString('pt-BR');
 
-  // ✅ Enquanto valida auth, não renderiza nada
-  if (loadingAuth) return null;
-
-  // ✅ Segurança extra
-  if (!user) return null;
+  if (loadingAuth || !user || !perms.ver) return null;
 
   return (
     <div className="ch-app-wrapper">
-      <Sidebar
-        user={user}
-        isOpen={menuOpen}
-        toggleMenu={() => setMenuOpen(!menuOpen)}
-      />
+      <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
 
       <main className="ch-main-content">
         <div className="page-container">
-
           <div className="stats-summary-grid">
             <div className="stat-card sc-aberto">
               <div className="stat-info">
                 <span className="stat-label">Novos / Aberto</span>
-                <p className="stat-value">{totalAbertos}</p>
+                <p className="stat-value">{stats.totalAbertos}</p>
               </div>
               <div className="stat-icon">📂</div>
             </div>
-
             <div className="stat-card sc-andamento">
               <div className="stat-info">
                 <span className="stat-label">Em Atendimento</span>
-                <p className="stat-value">{totalAndamento}</p>
+                <p className="stat-value">{stats.totalAndamento}</p>
               </div>
               <div className="stat-icon">🛠️</div>
             </div>
-
             <div className="stat-card sc-concluido">
               <div className="stat-info">
                 <span className="stat-label">Concluídos</span>
-                <p className="stat-value">{totalConcluidos}</p>
+                <p className="stat-value">{stats.totalConcluidos}</p>
               </div>
               <div className="stat-icon">✅</div>
             </div>
-
             <div className="stat-card sc-cancelado">
               <div className="stat-info">
                 <span className="stat-label">Cancelados</span>
-                <p className="stat-value">{totalCancelados}</p>
+                <p className="stat-value">{stats.totalCancelados}</p>
               </div>
               <div className="stat-icon">🚫</div>
             </div>
           </div>
 
           <div className="data-display-area">
-            <div className="top-actions" style={{ justifyContent: 'flex-end', marginBottom: '20px' }}>
-              <button className="btn-add-condo" onClick={() => handleOpenModal()}>
-                + Abrir Chamado
-              </button>
+            <div className="top-actions" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+              {perms.criar && (
+                <button className="btn-add-condo" onClick={() => handleOpenModal()}>
+                  + Abrir Chamado
+                </button>
+              )}
             </div>
 
             {loading ? (
@@ -166,12 +143,15 @@ export default function Chamados() {
                       </span>
                     </div>
 
-                    <div className="card-body">
+                    <div
+                      className="card-body"
+                      onClick={() => handleOpenModal(item)}
+                      style={{cursor: perms.editar ? 'pointer' : 'default'}}
+                    >
                       <div className="name-cell">
                         <strong>{item.titulo}</strong>
                         <span>{item.condominios?.nome || 'Condomínio não identificado'}</span>
                       </div>
-
                       <div className="info-grid">
                         <div className="info-block">
                           <label>Data</label>
@@ -189,7 +169,10 @@ export default function Chamados() {
                     <div className="card-footer">
                       <button
                         className="btn-view"
-                        onClick={() => navigate(`/detalhe/${item.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/detalhe/${item.id}`);
+                        }}
                       >
                         🔍 Acompanhar Chamado
                       </button>
@@ -203,26 +186,13 @@ export default function Chamados() {
           {isModalOpen && (
             <div className="modal-overlay">
               <div className="modal-content">
-                <div className="modal-header">
-                  <h2>
-                    {selectedChamado
-                      ? `Chamado #${formatID(selectedChamado.id)}`
-                      : 'Novo Chamado'}
-                  </h2>
-                  <button
-                    className="btn-close"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    &times;
-                  </button>
-                </div>
-
                 <FormChamado
                   user={user}
-                  chamadoEdicao={selectedChamado}
+                  chamado={selectedChamado}
                   onSave={handleSave}
                   onCancel={() => setIsModalOpen(false)}
                   saving={saving}
+                  readOnly={!perms.editar && !!selectedChamado}
                 />
               </div>
             </div>

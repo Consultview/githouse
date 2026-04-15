@@ -13,7 +13,7 @@ export default function AvisosHome() {
     { nome: "Comunicados Oficiais", rota: "/avisos/oficiais", cor: "#e74c3c" },
     { nome: "Manutenções", rota: "/avisos/manutencao", cor: "#f1c40f" },
     { nome: "Classificados", rota: "/avisos/comunidade", cor: "#2ecc71" },
-    { nome: "Documentos e Atas", rota: "/avisos/documentos", cor: "#3498db" },
+    
     { nome: "Novo Comunicado", rota: "/avisos/novo", cor: "#34495e" }
   ];
 

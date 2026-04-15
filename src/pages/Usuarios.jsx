@@ -1,52 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from './../SupabaseClient';
 import Sidebar from '../components/Sidebar';
 import FormUsuario from './FormUsuario';
+import { useAuth } from '../hooks/useAuth';
+import { useUsuarios } from '../hooks/useUsuarios';
+import { usuariosRepo } from '../database/UsuariosRepo';
 import './styles/usuarios.css';
 
 export default function Usuarios() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [condominios, setCondominios] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user, loadingAuth } = useAuth();
+  const { users, condominios, loading, fetchData } = useUsuarios();
+
   const [saving, setSaving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Estados para Modal e Ações
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
 
-  const perfilNome = { 1: 'Admin', 2: 'Síndico', 3: 'Funcionário', 4: 'Morador' };
+  // ✅ Atualizado para os 5 níveis que definimos
+  const perfilNome = { 
+    1: 'ADM Dono', 
+    2: 'Suporte', 
+    3: 'Síndico', 
+    4: 'Técnico', 
+    5: 'Morador' 
+  };
 
   const [novoUser, setNovoUser] = useState({
     nome: '', cpf: '', email: '', senha: '', perfil: '',
     condominio_id: '', bloco: '', numero_casa: '', telefone: '', status: true
   });
 
-  const formatID = (id) => id.toString().padStart(4, '0');
-
   useEffect(() => {
-    const sessionData = localStorage.getItem('cityhouse_session');
-    if (sessionData) {
-      setUser(JSON.parse(sessionData));
-      fetchData();
-    } else { navigate('/login'); }
-  }, [navigate]);
-
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const [resUsers, resCondos] = await Promise.all([
-        supabase.from('usuarios').select('*').order('id', { ascending: true }),
-        supabase.from('condominios').select('id, nome')
-      ]);
-      setUsers(resUsers.data || []);
-      setCondominios(resCondos.data || []);
-    } catch (err) { console.error("Erro:", err); } finally { setLoading(false); }
-  }
+    if (!loadingAuth) {
+      if (!user) navigate('/login');
+      else fetchData();
+    }
+  }, [user, loadingAuth, fetchData, navigate]);
 
   const handleOpenModal = (u = null, viewOnly = false) => {
     setIsViewOnly(viewOnly);
@@ -62,8 +53,7 @@ export default function Usuarios() {
 
   async function toggleStatus(id, currentStatus) {
     try {
-      const { error } = await supabase.from('usuarios').update({ status: !currentStatus }).eq('id', id);
-      if (error) throw error;
+      await usuariosRepo.updateStatus(id, !currentStatus);
       fetchData();
     } catch (err) { alert("Erro ao alterar status"); }
   }
@@ -72,31 +62,24 @@ export default function Usuarios() {
     if (e) e.preventDefault();
     setSaving(true);
     try {
-      if (editingId) {
-        const { error } = await supabase.from('usuarios').update(novoUser).eq('id', editingId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('usuarios').insert([novoUser]);
-        if (error) throw error;
-      }
+      await usuariosRepo.save(novoUser, editingId);
       setIsModalOpen(false);
       fetchData();
-    } catch (err) { alert("Erro ao salvar: " + err.message); } finally { setSaving(false); }
+    } catch (err) { alert("Erro ao salvar: " + err.message); } 
+    finally { setSaving(false); }
   }
 
-  if (!user) return null;
+  const formatID = (id) => id?.toString().padStart(4, '0') || '0000';
+
+  if (loadingAuth || !user) return null;
 
   return (
     <div className="ch-app-wrapper">
       <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
-
       <main className="ch-main-content">
         <div className="page-container">
-          
           <header className="top-actions">
-             <button className="btn-add-condo" onClick={() => handleOpenModal()}>
-                + NOVO USUÁRIO
-             </button>
+             <button className="btn-add-condo" onClick={() => handleOpenModal()}>+ NOVO USUÁRIO</button>
           </header>
 
           <div className="data-display-area anim-fade">
@@ -121,7 +104,7 @@ export default function Usuarios() {
                         <td>
                           <div className="user-info-cell">
                             <span className="text-bold">{u.nome}</span>
-                            <span className="perfil-tag">{perfilNome[u.perfil]}</span>
+                            <span className="perfil-tag">{perfilNome[u.perfil] || 'N/A'}</span>
                           </div>
                         </td>
                         <td>
@@ -132,18 +115,14 @@ export default function Usuarios() {
                         </td>
                         <td className="text-muted">{condo?.nome || 'Não Vinculado'}</td>
                         <td>
-                          <button 
-                            className={`status-pill ${u.status ? 'active' : 'inactive'}`}
-                            onClick={() => toggleStatus(u.id, u.status)}
-                            title="Clique para alterar status"
-                          >
+                          <button className={`status-pill ${u.status ? 'active' : 'inactive'}`} onClick={() => toggleStatus(u.id, u.status)}>
                             {u.status ? 'Ativo' : 'Inativo'}
                           </button>
                         </td>
                         <td className="text-center">
                           <div className="table-actions-group">
-                            <button className="btn-icon-action" onClick={() => handleOpenModal(u, true)} title="Visualizar">👁️</button>
-                            <button className="btn-icon-action" onClick={() => handleOpenModal(u, false)} title="Editar">✏️</button>
+                            <button className="btn-icon-action" onClick={() => handleOpenModal(u, true)}>👁️</button>
+                            <button className="btn-icon-action" onClick={() => handleOpenModal(u, false)}>✏️</button>
                           </div>
                         </td>
                       </tr>
@@ -156,12 +135,11 @@ export default function Usuarios() {
         </div>
       </main>
 
-      {/* Modal - Z-Index superior à Sidebar */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2>{isViewOnly ? 'Visualizar Usuário' : editingId ? 'Editar Usuário' : 'Novo Usuário'}</h2>
+              <h2>{isViewOnly ? 'Visualizar' : editingId ? 'Editar' : 'Novo'} Usuário</h2>
               <button className="btn-close" onClick={() => setIsModalOpen(false)}>&times;</button>
             </div>
             <FormUsuario

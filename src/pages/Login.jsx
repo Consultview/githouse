@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './../SupabaseClient';
 import './styles/login.css';
 
-export default function Login() {
+export default function Login({ setUser }) { // Recebe setUser para atualizar o App.jsx
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [lockMessage, setLockMessage] = useState('');
 
-  // Identificador do Dispositivo para o bloqueio
   const getDeviceKey = () => {
     let token = localStorage.getItem('ch_device_token');
     if (!token) {
@@ -20,9 +19,7 @@ export default function Login() {
     return token;
   };
 
-  useEffect(() => {
-    checkLockout();
-  }, []);
+  useEffect(() => { checkLockout(); }, []);
 
   const checkLockout = () => {
     const deviceId = getDeviceKey();
@@ -45,50 +42,60 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // 1. Chama sua RPC que valida e-mail e senha na sua tabela 'usuarios'
-      const { data: users, error } = await supabase.rpc('login_seguro', {
+      // 1. Validação de Usuário via RPC
+      const { data: users, error: rpcError } = await supabase.rpc('login_seguro', {
         email_input: email,
         senha_input: senha
       });
 
-      // Pega o primeiro usuário retornado
-      const user = users && users.length > 0 ? users[0] : null;
+      // O RPC geralmente retorna um array ou objeto único dependendo da sua função
+      const user = users && users.length > 0 ? users[0] : (users || null);
 
-      if (error || !user) {
+      if (rpcError || !user) {
         handleFailure();
         return;
       }
 
-      // SUCESSO: Limpa bloqueios
+      // 2. PERFORMANCE: Busca Permissões e Condomínio EM PARALELO
+      // Buscamos todas as colunas (p_criar, p_editar, etc) para as permissões funcionarem
+      const [permsResponse, condoResponse] = await Promise.all([
+        supabase
+          .from('permissoes_acesso')
+          .select('modulo_id, p_ver, p_criar, p_editar, p_excluir')
+          .eq('id_condominio', user.condominio_id)
+          .eq('id_perfil', user.perfil),
+        supabase
+          .from('condominios')
+          .select('nome')
+          .eq('id', user.condominio_id)
+          .single()
+      ]);
+
+      // 3. SUCESSO: Limpa bloqueios localmente
       const deviceId = getDeviceKey();
       localStorage.removeItem(`ch_attempts_${deviceId}`);
       localStorage.removeItem(`ch_lock_until_${deviceId}`);
 
-     
-
-
-      // 2. SALVAMENTO DA SESSÃO: Guardamos o objeto do usuário para usar depois
+      // 4. ESTRUTURA DA SESSÃO
       const sessionData = {
         id: user.id,
         nome: user.nome,
         email: user.email,
         perfil: user.perfil,
         condominio_id: user.condominio_id,
-        // Adicione esta linha se sua tabela usuários tiver o nome do condomínio via JOIN na RPC
-        nome_condominio: user.nome_condominio || 'Meu Condomínio', 
+        nome_condominio: condoResponse.data?.nome || user.nome_condominio || '',
+        permissoes: permsResponse.data || [], 
         login_at: new Date().toISOString()
       };
 
+      // 5. ATUALIZA ESTADO GLOBAL E STORAGE
       localStorage.setItem('cityhouse_session', JSON.stringify(sessionData));
+      if (setUser) setUser(sessionData);
 
-      
-     
-
-
-      // Redireciona
       navigate('/servicos');
 
     } catch (err) {
+      console.error('Erro no Login:', err);
       alert('Erro na conexão com o banco de dados.');
     } finally {
       setLoading(false);
@@ -123,7 +130,7 @@ export default function Login() {
 
         <div className="auth-card">
           {lockMessage && (
-            <div style={{color: '#d32f2f', background: '#ffebee', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontWeight: 'bold'}}>
+            <div className="lock-alert" style={{color: '#d32f2f', background: '#ffebee', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontWeight: 'bold'}}>
               {lockMessage}
             </div>
           )}
@@ -143,7 +150,7 @@ export default function Login() {
             </div>
 
             <button type="submit" className="btn-main" disabled={loading || !!lockMessage}>
-              {loading ? <div className="loader"></div> : "Entrar na plataforma"}
+              {loading ? "Processando..." : "Entrar na plataforma"}
             </button>
           </form>
 
