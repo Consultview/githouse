@@ -3,10 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    allowedHosts: true
-  },
   preview: {
-    allowedHosts: true
+    allowedHosts: true // Isso libera qualquer host, incluindo o do Render
   }
 })
