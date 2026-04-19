@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../hooks/useAuth';
 import { useAcessos } from '../hooks/useAcessos';
@@ -13,7 +12,8 @@ const ESTRUTURA_MODULOS = [
       { id: 'dash', label: 'Dashboard', desc: 'Métricas e performance' },
       { id: 'port', label: 'Portaria', desc: 'Controle de acesso e visitantes' },
       { id: 'cham', label: 'Chamados', desc: 'Tickets e manutenções' },
-      { id: 'pets', label: 'Pets', desc: 'Cadastro de animais' }
+      { id: 'pets', label: 'Pets', desc: 'Cadastro de animais' },
+      { id: 'pani', label: 'Pânico', desc: 'Alertas de emergência' }
     ]
   },
   {
@@ -55,12 +55,15 @@ export default function Acessos() {
   }, [selectedOrg, activePerfil, loadPerms]);
 
   const handleSalvar = async () => {
+    if (!selectedOrg || !activePerfil) return;
+    
     setSaving(true);
     try {
+      // Mapeia TODOS os módulos do código para garantir que existam no banco
       const modulosIds = ESTRUTURA_MODULOS.flatMap(cat => cat.itens.map(i => i.id));
 
       const rows = modulosIds.map(mId => ({
-        id_condominio: selectedOrg,
+        id_condominio: parseInt(selectedOrg),
         id_perfil: activePerfil,
         modulo_id: mId,
         p_ver: !!permissoes[`${mId}-Ver`],
@@ -69,9 +72,15 @@ export default function Acessos() {
         p_excluir: !!permissoes[`${mId}-Excluir`]
       }));
 
+      // O upsert do repositório usará o ON CONFLICT (id_condominio, id_perfil, modulo_id)
       await acessosRepo.upsertPermissoes(rows);
-      alert("Privilégios salvos com sucesso!");
+      
+      // Recarrega para garantir sincronia
+      await loadPerms(selectedOrg, activePerfil);
+      
+      alert("Privilégios atualizados com sucesso!");
     } catch (err) {
+      console.error(err);
       alert("Erro ao salvar: " + err.message);
     } finally {
       setSaving(false);
@@ -101,8 +110,14 @@ export default function Acessos() {
           <div className="acessos-selectors">
             <div className="select-group">
               <label className="ch-label-mini">CONDOMÍNIO</label>
-              <select className="ch-select-custom" value={selectedOrg} onChange={(e) => setSelectedOrg(e.target.value)}>
-                {condominios.map(c => <option key={c.id} value={c.id}>{c.nome.toUpperCase()}</option>)}
+              <select 
+                className="ch-select-custom" 
+                value={selectedOrg} 
+                onChange={(e) => setSelectedOrg(e.target.value)}
+              >
+                {condominios.map(c => (
+                  <option key={c.id} value={c.id}>{c.nome.toUpperCase()}</option>
+                ))}
               </select>
             </div>
 

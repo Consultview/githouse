@@ -19,7 +19,7 @@ export default function Footer() {
             <h4>Contato</h4>
             <p>Telefone: (65) 99354-6706</p>
             <p>E-mail: tijacksonlima@proton.me</p>
-            <p> Uberaba - MG</p>
+            <p>Uberaba - MG</p>
           </div>
         </div>
 
@@ -27,6 +27,22 @@ export default function Footer() {
         <div className="footer-bottom">
           <div className="footer-legal">
             <span>© 2026 CITYHOUSE. Todos os Direitos Reservados.</span>
+          </div>
+          
+          <div className="footer-credits" style={{ fontSize: '12px', marginTop: '10px' }}>
+            <span>Desenvolvido por </span>
+            <a 
+              href="https://detoxitsolutions.onrender.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ 
+                color: '#2563eb', 
+                textDecoration: 'none', 
+                fontWeight: '700' 
+              }}
+            >
+              DETOX IT SOLUTIONS
+            </a>
           </div>
         </div>
 

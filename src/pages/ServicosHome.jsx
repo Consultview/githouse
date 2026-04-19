@@ -16,44 +16,50 @@ export default function ServicosHome() {
       const agora = new Date().getTime();
       const quinzeMinutos = 15 * 60 * 1000;
 
+      // Validação de expiração de sessão
       if (agora - new Date(session.login_at).getTime() > quinzeMinutos) {
         localStorage.removeItem('cityhouse_session');
         setUser(null);
-        navigate('/login');
+        navigate('/login', { replace: true });
       } else {
         setUser(session);
       }
     } else {
-      navigate('/login');
+      // Se não houver sessão, limpa estado e redireciona
+      setUser(null);
+      navigate('/login', { replace: true });
     }
   }, [navigate]);
 
-  // Lista mestre com o novo módulo 'Pets' adicionado (id: pets)
+  // Lista mestre com todos os módulos disponíveis
   const allServicos = [
+    { id: 'pani', nome: "Protocolo de Pânico", rota: "/panico", cor: "#dc2626" },
     { id: 'dash', nome: "Dashboard", rota: "/dashboard", cor: "#0f172a" },
     { id: 'cond', nome: "Condomínios", rota: "/condominios", cor: "#2563eb" },
     { id: 'port', nome: "Portaria", rota: "/portaria", cor: "#10b981" },
     { id: 'cham', nome: "Chamados", rota: "/chamados", cor: "#f59e0b" },
     { id: 'resv', nome: "Reservas", rota: "/reservas", cor: "#8b5cf6" },
     { id: 'avis', nome: "Avisos", rota: "/avisos", cor: "#ef4444" },
-    { id: 'pets', nome: "Pets", rota: "/pets", cor: "#10b981" }, // ✅ ADICIONADO
-  
-    
+    { id: 'pets', nome: "Pets", rota: "/pets", cor: "#10b981" },
+    { id: 'user', nome: "Usuários", rota: "/usuarios", cor: "#64748b" },
     { id: 'conf', nome: "Configurações", rota: "/configuracoes", cor: "#f59e0b" }
   ];
 
-  // FILTRO DE SERVIÇOS: Só mostra o card se o usuário tiver p_ver = true
-  const servicosFiltrados = allServicos.filter(servico => {
-    if (!user) return false;
+  // 1. Filtra por permissão e 2. Ordena de A a Z
+  const servicosFiltrados = allServicos
+    .filter(servico => {
+      if (!user) return false;
 
-    // Perfil 1 (ADM) vê todos os cards
-    if (Number(user.perfil) === 1) return true;
+      // ADM (Perfil 1) visualiza todos os módulos
+      if (Number(user.perfil) === 1) return true;
 
-    // Busca a permissão 'p_ver' dentro do array salvo no login
-    const permissao = user.permissoes?.find(p => p.modulo_id === servico.id);
-    return permissao?.p_ver === true;
-  });
+      // Verifica se o módulo específico está marcado como 'p_ver' no banco
+      const permissao = user.permissoes?.find(p => p.modulo_id === servico.id);
+      return permissao?.p_ver === true;
+    })
+    .sort((a, b) => a.nome.localeCompare(b.nome)); // ✅ Ordenação Alfabética aplicada
 
+  // Bloqueio de renderização caso o usuário tenha deslogado
   if (!user) return null;
 
   return (
@@ -66,21 +72,32 @@ export default function ServicosHome() {
 
       <main className="sh-container">
         <header className="sh-header-clean">
-          <div className="sh-badge-large">Acesso Rápido - {user.nome_condominio}</div>
+          <div className="sh-badge-large">
+            Acesso Rápido - {user.nome_condominio?.toUpperCase()}
+          </div>
         </header>
 
         <div className="sh-grid">
           {servicosFiltrados.map((s, i) => (
             <Link key={i} to={s.rota} className="sh-card">
               <span className="sh-card-name">{s.nome}</span>
-              <div className="sh-card-line" style={{ backgroundColor: s.cor }}></div>
+              <div 
+                className="sh-card-line" 
+                style={{ backgroundColor: s.cor }}
+              ></div>
             </Link>
           ))}
 
-          {/* Se a lista estiver vazia, mostra um aviso */}
+          {/* Feedback caso o usuário não tenha nenhum acesso liberado */}
           {servicosFiltrados.length === 0 && (
-            <p style={{color: '#64748b', gridColumn: '1/-1', textAlign: 'center', marginTop: '20px'}}>
-              Você não possui módulos liberados. Entre em contato com o administrador.
+            <p style={{
+              color: '#64748b', 
+              gridColumn: '1/-1', 
+              textAlign: 'center', 
+              marginTop: '40px',
+              fontWeight: '600'
+            }}>
+              Nenhum módulo liberado. Contate o administrador do sistema.
             </p>
           )}
         </div>

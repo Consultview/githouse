@@ -5,9 +5,17 @@ import './sidebar.css';
 export default function Sidebar({ isOpen, toggleMenu, user }) {
   const navigate = useNavigate();
 
+  // Informações de Governança de Software
+  const SYS_DATA = {
+    version: "2.0.1",
+    license: "Enterprise",
+    env: "Production",
+    copyright: "© 2026 CITYHOUSE"
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('cityhouse_session');
-    navigate('/login');
+    window.location.href = '/login'; 
   };
 
   const goHome = () => {
@@ -27,14 +35,22 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
     { id: 'home', path: '/', label: 'Sobre' },
   ];
 
-  const filteredMenu = allMenuItems.filter(item => {
-    if (!user) return item.path === '/';
-    if (Number(user.perfil) === 1) return true;
-    if (item.path === '/servicos') return true;
+  const filteredMenu = allMenuItems
+    .filter(item => {
+      if (!user) return item.path === '/';
+      if (Number(user.perfil) === 1) return true;
+      if (item.path === '/servicos' || item.path === '/') return true;
 
-    const permissao = user.permissoes?.find(p => String(p.modulo_id) === String(item.id));
-    return (permissao?.p_ver === true || permissao?.p_ver === 1) || item.path === '/';
-  });
+      const permissao = user.permissoes?.find(p => String(p.modulo_id) === String(item.id));
+      return (permissao?.p_ver === true || permissao?.p_ver === 1);
+    })
+    .sort((a, b) => {
+      if (a.id === 'serv') return -1;
+      if (b.id === 'serv') return 1;
+      if (a.id === 'home') return 1;
+      if (b.id === 'home') return -1;
+      return a.label.localeCompare(b.label);
+    });
 
   return (
     <>
@@ -58,38 +74,33 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
             </div>
           </div>
 
-          {/* SEÇÃO DO USUÁRIO CENTRALIZADA E SEM ÍCONE */}
-          <div className="sidebar-user" style={{ justifyContent: 'center' }}>
-            <div className="user-info" style={{ textAlign: 'center', width: '100%', alignItems: 'center' }}>
-              
-              {/* NOME DO CONDOMÍNIO ACIMA */}
-              {user?.nome_condominio && (
-                <span style={{
-                  fontSize: '10px',
-                  fontWeight: '800',
-                  color: '#3498db',
-                  textTransform: 'uppercase',
-                  display: 'block',
-                  marginBottom: '4px',
-                  letterSpacing: '0.5px'
-                }}>
-                  {user.nome_condominio}
+          {user && user.id && (
+            <div className="sidebar-user" style={{ justifyContent: 'center' }}>
+              <div className="user-info" style={{ textAlign: 'center', width: '100%', alignItems: 'center' }}>
+                {user?.nome_condominio && (
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    color: '#3498db',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                    marginBottom: '4px',
+                    letterSpacing: '0.5px'
+                  }}>
+                    {user.nome_condominio}
+                  </span>
+                )}
+                <span className="user-name" style={{ display: 'block' }}>{user?.nome || "Usuário"}</span>
+                <span className="user-role" style={{ display: 'block' }}>
+                  {Number(user?.perfil) === 1 ? "Administrador" :
+                   Number(user?.perfil) === 2 ? "Suporte" :
+                   Number(user?.perfil) === 3 ? "Gestor" :
+                   Number(user?.perfil) === 4 ? "Técnico" :
+                   Number(user?.perfil) === 5 ? "Morador" : "Acesso Restrito"}
                 </span>
-              )}
-
-              <span className="user-name" style={{ display: 'block' }}>
-                {user?.nome || "Usuário"}
-              </span>
-              
-              <span className="user-role" style={{ display: 'block' }}>
-                {user?.perfil === 1 ? "Administrador" :
-                 user?.perfil === 2 ? "Suporte" :
-                 user?.perfil === 3 ? "Gestor" :
-                 user?.perfil === 4 ? "Técnico" :
-                 user?.perfil === 5 ? "Morador" : "Acesso Restrito"}
-              </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <nav className="sidebar-nav">
             {filteredMenu.map(item => (
@@ -102,21 +113,37 @@ export default function Sidebar({ isOpen, toggleMenu, user }) {
                 <span className="label">{item.label}</span>
               </NavLink>
             ))}
-
-            {!user?.id && (
-               <NavLink to="/login" className="nav-item btn-login-nav">
-                 <span className="label">Entrar no Sistema</span>
-               </NavLink>
-            )}
           </nav>
 
-          {user?.id && (
-            <div className="sidebar-footer">
-              <button onClick={handleLogout} className="btn-logout">
+          <div className="sidebar-footer" style={{ padding: '20px 15px', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+            {user && user.id && (
+              <button onClick={handleLogout} className="btn-logout" style={{ width: '100%', marginBottom: '18px' }}>
                 Sair do Sistema
               </button>
+            )}
+            
+            {/* Metadata de Auditoria e Conformidade */}
+            <div className="system-metadata" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8', fontWeight: 'bold' }}>
+                <span>VERSÃO</span>
+                <span style={{ color: '#1e293b' }}>{SYS_DATA.version}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8', fontWeight: 'bold' }}>
+                <span>LICENÇA</span>
+                <span style={{ color: '#1e293b' }}>{SYS_DATA.license}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8', fontWeight: 'bold' }}>
+                <span>AMBIENTE</span>
+                <span style={{ color: '#2563eb' }}>{SYS_DATA.env.toUpperCase()}</span>
+              </div>
+              
+              <div style={{ borderTop: '1px solid #f1f5f9', marginTop: '5px', paddingTop: '8px', textAlign: 'center' }}>
+                <span style={{ fontSize: '9px', color: '#cbd5e1', fontWeight: '700', letterSpacing: '0.5px' }}>
+                  {SYS_DATA.copyright}
+                </span>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </aside>
     </>
