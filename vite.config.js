@@ -31,5 +31,19 @@ export default defineConfig({
       }
     })
   ],
-  define: { 'process.env': {} }
+  define: { 'process.env': {} },
+  // ADICIONE ESTE BLOCO ABAIXO:
+  preview: {
+    allowedHosts: [
+      '://onrender.com',
+      '.onrender.com' // Libera qualquer subdomínio do Render
+    ]
+  },
+  server: {
+    allowedHosts: [
+      '://onrender.com',
+      '.onrender.com'
+    ]
+  }
 });
+
