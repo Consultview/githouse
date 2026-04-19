@@ -7,14 +7,18 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      includeAssets: ["icons/favicon.svg", "icons/icon-192.png", "icons/icon-512.png"],
       devOptions: {
-        enabled: true
+        enabled: true,
+        type: "module"
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true
+        skipWaiting: true,
+        // Ajuste para silenciar o aviso no Termux/Dev:
+        globDirectory: 'dist',
+        globPatterns: [] 
       },
       manifest: {
         name: "CityHouse",
@@ -24,26 +28,34 @@ export default defineConfig({
         background_color: "#ffffff",
         theme_color: "#000000",
         icons: [
-          { src: "favicon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+          { 
+            src: "icons/favicon.svg", 
+            sizes: "any", 
+            type: "image/svg+xml",
+            purpose: "any" 
+          },
+          { 
+            src: "icons/icon-192.png", 
+            sizes: "192x192", 
+            type: "image/png" 
+          },
+          { 
+            src: "icons/icon-512.png", 
+            sizes: "512x512", 
+            type: "image/png", 
+            purpose: "maskable" 
+          }
         ]
       }
     })
   ],
   define: { 'process.env': {} },
-  // ADICIONE ESTE BLOCO ABAIXO:
-  preview: {
-    allowedHosts: [
-      '://onrender.com',
-      '.onrender.com' // Libera qualquer subdomínio do Render
-    ]
-  },
   server: {
-    allowedHosts: [
-      '://onrender.com',
-      '.onrender.com'
-    ]
-  }
+    allowedHosts: ['.onrender.com']
+  },
+  preview: {
+    allowedHosts: ['.onrender.com']
+  },
+  // Garante que o build encontre os caminhos corretos no servidor
+  base: './' 
 });
-

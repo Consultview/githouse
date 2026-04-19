@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// Componentes
+// Componentes Base
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
+import Acessos from './components/Acessos';
 
-// Páginas
+// Páginas Gerais
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
 import Condominios from './pages/Condominios';
-import Dashboard from './pages/Dashboard';
+import Configuracoes from './pages/Configuracoes';
+import ServicosHome from './pages/ServicosHome';
+
+// Páginas de Módulos Específicos
 import Chamados from './pages/Chamados';
 import DetalheChamado from './pages/DetalheChamado';
-import ServicosHome from './pages/ServicosHome';
 import Reservas from './pages/Reservas';
 import PanicoHome from './pages/PanicoHome';
 import PetsHome from './pages/PetsHome';
 import PortariaHome from './pages/PortariaHome';
 import AvisosHome from './pages/AvisosHome';
-import Configuracoes from './pages/Configuracoes';
-import Acessos from './components/Acessos';
+
+// Páginas do Módulo Moradores (Gestão Administrativa)
+import Moradores from './pages/morador/Moradores';
+import Validacaodocumentos from './pages/morador/Validacaodocumentos';
 
 import './global.css';
 
-// COMPONENTE DO BANNER DE INSTALAÇÃO
+// COMPONENTE DO BANNER DE INSTALAÇÃO (PWA)
 function InstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showBanner, setShowBanner] = useState(false);
@@ -90,7 +96,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <>
-        {/* O Banner aparece apenas quando o navegador permite a instalação */}
+        {/* Banner PWA */}
         <InstallBanner />
 
         <div className="app-main-layout">
@@ -98,21 +104,32 @@ export default function App() {
 
           <main className="app-content">
             <Routes>
+              {/* Rotas Públicas e Principais */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login setUser={setUser} />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/usuarios" element={<Usuarios />} />
-              <Route path="/condominios" element={<Condominios />} />
-              <Route path="/acessos" element={<Acessos />} />
-              <Route path="/servicos" element={<ServicosHome user={user} />} />
-              <Route path="/chamados" element={<Chamados user={user} />} />
+              <Route path="/dashboard/" element={<Dashboard />} />
+              <Route path="/servicos/" element={<ServicosHome user={user} />} />
+              
+              {/* Gestão de Acessos e Sistema */}
+              <Route path="/usuarios/" element={<Usuarios />} />
+              <Route path="/condominios/" element={<Condominios />} />
+              <Route path="/acessos/" element={<Acessos />} />
+              <Route path="/configuracoes/" element={<Configuracoes />} />
+
+              {/* Módulos Operacionais */}
+              <Route path="/chamados/" element={<Chamados user={user} />} />
               <Route path="/detalhe/:id" element={<DetalheChamado user={user} />} />
-              <Route path="/reservas" element={<Reservas />} />
+              <Route path="/reservas/" element={<Reservas />} />
               <Route path="/pets" element={<PetsHome />} />
-              <Route path="/portaria" element={<PortariaHome />} />
-              <Route path="/panico" element={<PanicoHome />} />
-              <Route path="/avisos" element={<AvisosHome />} />
-              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/portaria/" element={<PortariaHome />} />
+              <Route path="/panico/" element={<PanicoHome />} />
+              <Route path="/avisos/" element={<AvisosHome />} />
+
+              {/* Módulos de Moradores e Gestão Administrativa */}
+              <Route path="/morador/" element={<Moradores />} />
+              <Route path="/validacao/" element={<Validacaodocumentos />} />
+             
+              
             </Routes>
           </main>
         </div>

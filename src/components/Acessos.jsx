@@ -28,6 +28,7 @@ const ESTRUTURA_MODULOS = [
     itens: [
       { id: 'cond', label: 'Condomínios', desc: 'Gestão de unidades' },
       { id: 'user', label: 'Usuários', desc: 'Perfis de acesso' },
+      { id: 'mora', label: 'Moradores', desc: 'Gestão, Documentos e Multas' },
       { id: 'conf', label: 'Configurações', desc: 'Parâmetros do sistema' }
     ]
   }
@@ -56,10 +57,9 @@ export default function Acessos() {
 
   const handleSalvar = async () => {
     if (!selectedOrg || !activePerfil) return;
-    
+
     setSaving(true);
     try {
-      // Mapeia TODOS os módulos do código para garantir que existam no banco
       const modulosIds = ESTRUTURA_MODULOS.flatMap(cat => cat.itens.map(i => i.id));
 
       const rows = modulosIds.map(mId => ({
@@ -72,12 +72,9 @@ export default function Acessos() {
         p_excluir: !!permissoes[`${mId}-Excluir`]
       }));
 
-      // O upsert do repositório usará o ON CONFLICT (id_condominio, id_perfil, modulo_id)
       await acessosRepo.upsertPermissoes(rows);
-      
-      // Recarrega para garantir sincronia
       await loadPerms(selectedOrg, activePerfil);
-      
+
       alert("Privilégios atualizados com sucesso!");
     } catch (err) {
       console.error(err);
@@ -110,9 +107,9 @@ export default function Acessos() {
           <div className="acessos-selectors">
             <div className="select-group">
               <label className="ch-label-mini">CONDOMÍNIO</label>
-              <select 
-                className="ch-select-custom" 
-                value={selectedOrg} 
+              <select
+                className="ch-select-custom"
+                value={selectedOrg}
                 onChange={(e) => setSelectedOrg(e.target.value)}
               >
                 {condominios.map(c => (

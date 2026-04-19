@@ -40,6 +40,7 @@ export default function ServicosHome() {
     { id: 'cham', nome: "Chamados", rota: "/chamados", cor: "#f59e0b" },
     { id: 'resv', nome: "Reservas", rota: "/reservas", cor: "#8b5cf6" },
     { id: 'avis', nome: "Avisos", rota: "/avisos", cor: "#ef4444" },
+    { id: 'mora', nome: "Morador", rota: "/morador", cor: "#ef4444" },
     { id: 'pets', nome: "Pets", rota: "/pets", cor: "#10b981" },
     { id: 'user', nome: "Usuários", rota: "/usuarios", cor: "#64748b" },
     { id: 'conf', nome: "Configurações", rota: "/configuracoes", cor: "#f59e0b" }
