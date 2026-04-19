@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Variáveis de ambiente (SEGURANÇA)
+.env
+.env.production
+.env.development
+
+# PWA - Arquivos gerados
+dev-dist
+
