@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import NaoAutorizado from '../../components/NaoAutorizado';
@@ -10,48 +10,61 @@ export default function Moradores() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moduloBloqueado, setModuloBloqueado] = useState(null);
 
-  // Módulos com rotas ajustadas para o App.jsx
-  const modulos = [
-    { 
-      nome: "Aprovação de Documentos", 
-      rota: "/validacao/", // Ajustado de /aprovacao/ para /validacao/
-      cor: "#10b981", 
-      liberado: true 
-    },
-    { 
-      nome: "Pagamentos e Cobranças", 
-      rota: "/moradores/financeiro/", 
-      cor: "#059669", 
-      liberado: false 
-    },
-    { 
-      nome: "Contratos e Fornecedores", 
-      rota: "/moradores/contratos/", 
-      cor: "#2563eb", 
-      liberado: false 
-    },
-    { 
-      nome: "Multas e Advertências", 
-      rota: "/moradores/multas/", 
-      cor: "#dc2626", 
-      liberado: false 
-    },
-    { 
-      nome: "Gestão de Unidades", 
-      rota: "/moradores/unidades/", 
-      cor: "#64748b", 
-      liberado: false
-    }
-  ];
+  // 🔐 normalização do perfil (seguro)
+  const perfilUsuario = useMemo(() => {
+    const p = Number(user?.perfil);
+    return Number.isFinite(p) ? p : 99;
+  }, [user]);
 
-  if (loadingAuth) return <div className="loading">Carregando...</div>;
+  // 🎯 regra clara de permissão
+  const podeAprovar = perfilUsuario >= 1 && perfilUsuario <= 3;
+
+  // 📦 módulos centralizados
+  const modulos = useMemo(() => {
+    return [
+      {
+        id: 'aprovacao',
+        nome: "Aprovação de Documentos",
+        rota: "/validacao",
+        cor: "#10b981",
+        liberado: podeAprovar,
+        visivel: true
+      },
+      {
+        id: 'prontuario',
+        nome: "Contratos e pagamentos",
+        rota: "/prontuario",
+        cor: "#2563eb",
+        liberado: true,
+        visivel: true
+      },
+      {
+        id: 'multas',
+        nome: "Multas e Advertências",
+        rota: "/moradores/multas",
+        cor: "#dc2626",
+        liberado: false,
+        visivel: true
+      }
+    ];
+  }, [podeAprovar]);
+
+  // ⏳ loading
+  if (loadingAuth) {
+    return <div className="loading">Carregando informações...</div>;
+  }
+
+  // 🔒 segurança
+  if (!user) {
+    return <div className="loading">Usuário não encontrado. Faça login novamente.</div>;
+  }
 
   return (
     <div className="sh-layout-root">
       <Sidebar
         user={user}
         isOpen={menuOpen}
-        toggleMenu={() => setMenuOpen(!menuOpen)}
+        toggleMenu={() => setMenuOpen(prev => !prev)}
       />
 
       {moduloBloqueado ? (
@@ -63,26 +76,32 @@ export default function Moradores() {
         <main className="sh-container">
           <header className="sh-header-clean">
             <div className="sh-badge-large">
-              Módulo de Moradores - {user?.nome_condominio?.toUpperCase() || "SISTEMA"}
+              Módulo de Moradores - {user?.nome_condominio?.toUpperCase() || "CONDOMÍNIO"}
             </div>
           </header>
 
           <div className="sh-grid">
-            {modulos.map((m, i) => (
+            {modulos.map((m) => (
               m.liberado ? (
-                <Link key={i} to={m.rota} className="sh-card">
+                <Link key={m.id} to={m.rota} className="sh-card">
                   <span className="sh-card-name">{m.nome}</span>
-                  <div className="sh-card-line" style={{ backgroundColor: m.cor }}></div>
+                  <div
+                    className="sh-card-line"
+                    style={{ backgroundColor: m.cor }}
+                  />
                 </Link>
               ) : (
                 <div
-                  key={i}
+                  key={m.id}
                   className="sh-card"
                   onClick={() => setModuloBloqueado(m.nome)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', opacity: 0.6 }}
                 >
                   <span className="sh-card-name">{m.nome}</span>
-                  <div className="sh-card-line" style={{ backgroundColor: '#cbd5e1' }}></div>
+                  <div
+                    className="sh-card-line"
+                    style={{ backgroundColor: '#cbd5e1' }}
+                  />
                 </div>
               )
             ))}

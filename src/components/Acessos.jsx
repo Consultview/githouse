@@ -28,7 +28,7 @@ const ESTRUTURA_MODULOS = [
     itens: [
       { id: 'cond', label: 'Condomínios', desc: 'Gestão de unidades' },
       { id: 'user', label: 'Usuários', desc: 'Perfis de acesso' },
-      { id: 'mora', label: 'Moradores', desc: 'Gestão, Documentos e Multas' },
+      { id: 'mora', label: 'Moradores', desc: 'Gestão, Documentos e Multas' }, // Módulo Moradores adicionado
       { id: 'conf', label: 'Configurações', desc: 'Parâmetros do sistema' }
     ]
   }
@@ -60,12 +60,14 @@ export default function Acessos() {
 
     setSaving(true);
     try {
+      // Coleta todos os IDs de módulos da estrutura atualizada
       const modulosIds = ESTRUTURA_MODULOS.flatMap(cat => cat.itens.map(i => i.id));
 
       const rows = modulosIds.map(mId => ({
-        id_condominio: parseInt(selectedOrg),
-        id_perfil: activePerfil,
+        id_condominio: Number(selectedOrg),
+        id_perfil: Number(activePerfil),
         modulo_id: mId,
+        // O USO DE !! GARANTE QUE 'UNDEFINED' VIRE 'FALSE' E NÃO QUEBRE O BANCO
         p_ver: !!permissoes[`${mId}-Ver`],
         p_criar: !!permissoes[`${mId}-Criar`],
         p_editar: !!permissoes[`${mId}-Editar`],
@@ -73,12 +75,14 @@ export default function Acessos() {
       }));
 
       await acessosRepo.upsertPermissoes(rows);
+      
+      // Recarrega as permissões para garantir que a UI está sincronizada
       await loadPerms(selectedOrg, activePerfil);
 
-      alert("Privilégios atualizados com sucesso!");
+      alert("Privilégios de acesso atualizados!");
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar: " + err.message);
+      alert("Erro ao salvar no Supabase: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -94,11 +98,15 @@ export default function Acessos() {
         <header className="acessos-header">
           <div className="title-block">
             <h1>Privilégios de Acesso</h1>
-            <p>Controle as ações permitidas para cada perfil e condomínio</p>
+            <p>Gerencie permissões para o módulo <strong>Moradores</strong> e outros.</p>
           </div>
           <div className="header-buttons">
-            <button className="btn-save" onClick={handleSalvar} disabled={saving || loading}>
-              {saving ? "PROCESSANDO..." : "SALVAR ALTERAÇÕES"}
+            <button 
+              className="btn-save" 
+              onClick={handleSalvar} 
+              disabled={saving || loading}
+            >
+              {saving ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
             </button>
           </div>
         </header>
@@ -119,7 +127,7 @@ export default function Acessos() {
             </div>
 
             <div className="perfil-tabs-wrapper">
-              <label className="ch-label-mini">NÍVEL DE ACESSO</label>
+              <label className="ch-label-mini">PERFIL DE USUÁRIO</label>
               <div className="perfil-selector">
                 {[
                   { id: 1, n: 'ADM' },
@@ -142,7 +150,7 @@ export default function Acessos() {
 
           <div className="tree-wrapper">
             {loading ? (
-              <div className="loader-perms">Sincronizando banco...</div>
+              <div className="loader-perms">Sincronizando permissões...</div>
             ) : (
               ESTRUTURA_MODULOS.map((cat, idx) => (
                 <div key={idx} className="tree-group">

@@ -49,12 +49,15 @@ export default function Login({ setUser }) { // Recebe setUser para atualizar o 
       });
 
       // O RPC geralmente retorna um array ou objeto único dependendo da sua função
-      const user = users && users.length > 0 ? users[0] : (users || null);
+    //  const user = users && users.length > 0 ? users[0] : (users || null);
 
-      if (rpcError || !user) {
-        handleFailure();
-        return;
-      }
+const user = Array.isArray(users) && users.length > 0 ? users[0] : null;
+
+
+if (rpcError || !user || !user.id) {
+  handleFailure();
+  return;
+}
 
       // 2. PERFORMANCE: Busca Permissões e Condomínio EM PARALELO
       // Buscamos todas as colunas (p_criar, p_editar, etc) para as permissões funcionarem

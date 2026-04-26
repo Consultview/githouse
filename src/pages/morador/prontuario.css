@@ -1,0 +1,146 @@
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+  font-family: Arial, sans-serif;
+}
+
+/* 📦 CONTEÚDO PRINCIPAL */
+.content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+/* 🧠 TÍTULO */
+.content h1 {
+  font-size: 24px;
+  margin-bottom: 25px;
+  color: #1f2937;
+}
+
+/* 📦 CARD PADRÃO */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* 🧾 TÍTULOS DOS CARDS */
+.card h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+/* 📄 TEXTOS */
+.card p {
+  margin: 6px 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+/* 🔗 LINKS DE DOCUMENTOS */
+.card a {
+  display: inline-block;
+  margin: 8px 0;
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.card a:hover {
+  text-decoration: underline;
+}
+
+/* 📤 INPUT FILE */
+.card input[type="file"] {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+/* 🟡 STATUS */
+.card span,
+.card div {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+/* 🟢 STATUS OK */
+.status-ok {
+  color: #16a34a;
+}
+
+/* 🟠 PENDENTE */
+.status-pendente {
+  color: #f59e0b;
+}
+
+/* 🔴 REJEITADO */
+.status-rejeitado {
+  color: #dc2626;
+}
+
+/* 📝 TEXTAREA OBSERVAÇÕES */
+textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  resize: none;
+  font-size: 14px;
+  outline: none;
+  margin-top: 10px;
+  transition: 0.2s;
+}
+
+textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+}
+
+/* 🔘 BOTÃO */
+button {
+  margin-top: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+/* 📱 RESPONSIVO */
+@media (max-width: 768px) {
+  .content {
+    padding: 15px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .content h1 {
+    font-size: 20px;
+  }
+}
