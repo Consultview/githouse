@@ -1,86 +1,138 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
-import { useUsuarios } from '../../hooks/useUsuarios';
+import { prontuarioService } from '../../services/prontuarioService';
 import './validacaodocumento.css';
 
 export default function ValidacaoDocumentos() {
-  const navigate = useNavigate();
+
   const { user, loadingAuth } = useAuth();
-  const { users, fetchData, loading } = useUsuarios();
+  const [lista, setLista] = useState([]);
 
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const perfil = Number(user?.perfil) || 99;
+  // 🔥 controle correto por documento
+  const [aberto, setAberto] = useState({
+    docId: null,
+    moradorId: null
+  });
 
   useEffect(() => {
-    if (!loadingAuth && user) fetchData();
-  }, [loadingAuth, user, fetchData]);
+    if (!loadingAuth && user) {
+      loadData();
+    }
+  }, [loadingAuth, user]);
 
-  const baseList = useMemo(() => {
-    if (!Array.isArray(users)) return [];
+  const loadData = async () => {
+    const data = await prontuarioService.getProntuariosParaValidacao();
+    setLista(data || []);
+  };
 
-    if (perfil === 1 || perfil === 3) return users;
+  const aprovar = async (id) => {
+    await prontuarioService.aprovarDocumento(id);
+    loadData();
+  };
 
-    return users.filter(
-      (u) => String(u.condominio_id) === String(user?.condominio_id)
-    );
-  }, [users, perfil, user]);
+  const rejeitar = async (id) => {
+    await prontuarioService.rejeitarDocumento(id);
+    loadData();
+  };
 
-  if (loadingAuth || loading) {
-    return <div>Carregando...</div>;
+  if (loadingAuth) {
+    return <div className="docs-loading">Carregando...</div>;
   }
 
   return (
-    <div className="docs-app-container">
+    <div className="docs-layout">
 
-      <Sidebar
-        user={user}
-        isOpen={menuOpen}
-        toggleMenu={() => setMenuOpen(!menuOpen)}
-      />
+      <Sidebar user={user} />
 
-      <main className="docs-main-content">
+      <main className="docs-content">
 
         <h1>Validação de Documentos</h1>
 
-        <table className="docs-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Morador</th>
-              <th>Unidade</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
+        <div className="docs-grid">
 
-          <tbody>
-            {baseList.map((item) => (
-              <tr key={item.id}>
-                <td>#{String(item.id).padStart(4, '0')}</td>
+          {lista.map((item) => (
 
-                <td>
-                  {item.usuarios?.nome || 'Sem nome'}
-                </td>
+            <div key={item.id} className="doc-card">
 
-                <td>
-                  {item.unidade} {item.bloco && `- ${item.bloco}`}
-                </td>
+              <div className="doc-header">
+                <h3>{item.usuarios?.nome || 'Sem nome'}</h3>
 
-                <td>
-                  <button
-                    className="btn-analisar"
-                    onClick={() => navigate(`/detalhedoc/${item.id}`)}
-                  >
-                    Abrir
-                  </button>
-                </td>
+                {/* 🔥 corrigido: não é ID do morador, é do usuário */}
+                <span className="txt-small">
+                  Usuário #{item.usuario_id}
+                </span>
+              </div>
 
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              {(item.documentos || []).map((doc) => (
+
+                <div key={doc.id} className="doc-item">
+
+                  <div className="doc-top">
+
+                    <span className="doc-tipo">{doc.tipo}</span>
+
+                    <span className={`status-badge ${doc.status}`}>
+                      {doc.status}
+                    </span>
+
+                    <button
+                      className="btn-view"
+                      onClick={() =>
+                        setAberto({
+                          docId: aberto.docId === doc.id ? null : doc.id,
+                          moradorId: item.id
+                        })
+                      }
+                    >
+                      Ver
+                    </button>
+
+                  </div>
+
+                  {aberto.docId === doc.id && (
+
+                    <div className="doc-preview">
+
+                      {/* 🔥 preview mais seguro */}
+                      <iframe
+                        src={doc.url}
+                        title="documento"
+                      />
+
+                      {doc.status === 'pendente' && (
+                        <div className="doc-actions">
+
+                          <button
+                            className="btn-ok"
+                            onClick={() => aprovar(doc.id)}
+                          >
+                            Aprovar
+                          </button>
+
+                          <button
+                            className="btn-bad"
+                            onClick={() => rejeitar(doc.id)}
+                          >
+                            Rejeitar
+                          </button>
+
+                        </div>
+                      )}
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              ))}
+
+            </div>
+
+          ))}
+
+        </div>
 
       </main>
     </div>

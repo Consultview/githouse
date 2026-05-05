@@ -32,20 +32,33 @@ export default function Moradores() {
       },
       {
         id: 'prontuario',
-        nome: "Contratos e pagamentos",
+        nome: "Documentos e Contratos",
         rota: "/prontuario",
         cor: "#2563eb",
         liberado: true,
         visivel: true
       },
       {
-        id: 'multas',
-        nome: "Multas e Advertências",
-        rota: "/moradores/multas",
+        id: 'pagamento',
+        nome: "Pagamentos",
+        rota: "/moradores/pagamento",
         cor: "#dc2626",
         liberado: false,
         visivel: true
-      }
+      },
+
+       {
+          id: 'dashboard',
+          nome: "Pagamentos",
+          rota: "/moradores/dashboard",
+          cor: "#dc2626",
+          liberado: false,
+          visivel: true
+        }
+ 
+
+
+      
     ];
   }, [podeAprovar]);
 

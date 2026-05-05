@@ -1,146 +1,141 @@
-.app-wrapper {
+/* pages/morador/prontuario.css */
+
+.pt-wrapper {
   display: flex;
-  min-height: 100vh;
-  background: #f5f7fb;
-  font-family: Arial, sans-serif;
+  height: 100vh;
+  background: #f4f6f9;
 }
 
-/* 📦 CONTEÚDO PRINCIPAL */
-.content {
+.pt-content {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
 }
 
-/* 🧠 TÍTULO */
-.content h1 {
-  font-size: 24px;
-  margin-bottom: 25px;
-  color: #1f2937;
+.pt-content h1 {
+  margin-bottom: 20px;
+  font-size: 26px;
+  color: #1e293b;
 }
 
-/* 📦 CARD PADRÃO */
-.card {
-  background: #ffffff;
-  border-radius: 14px;
+.pt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.pt-card {
+  background: #fff;
   padding: 20px;
-  margin-bottom: 18px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-  transition: 0.2s ease;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  transition: 0.2s;
 }
 
-.card:hover {
-  transform: translateY(-2px);
+.pt-card:hover {
+  transform: translateY(-3px);
 }
 
-/* 🧾 TÍTULOS DOS CARDS */
-.card h2 {
-  font-size: 18px;
-  margin-bottom: 12px;
-  color: #111827;
+.pt-card h3 {
+  margin-bottom: 15px;
+  color: #0f172a;
 }
 
-/* 📄 TEXTOS */
-.card p {
+.pt-card p {
   margin: 6px 0;
-  color: #4b5563;
-  font-size: 14px;
+  color: #475569;
 }
 
-/* 🔗 LINKS DE DOCUMENTOS */
-.card a {
+.pt-card a {
   display: inline-block;
-  margin: 8px 0;
+  margin-bottom: 10px;
   color: #2563eb;
-  font-weight: 500;
   text-decoration: none;
+  font-weight: 500;
 }
 
-.card a:hover {
-  text-decoration: underline;
+.pt-card input {
+  width: 100%;
+  margin: 10px 0;
 }
 
-/* 📤 INPUT FILE */
-.card input[type="file"] {
-  margin-top: 10px;
+.pt-card button {
   width: 100%;
   padding: 10px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 10px;
-  background: #f9fafb;
-  cursor: pointer;
-}
-
-/* 🟡 STATUS */
-.card span,
-.card div {
-  margin-top: 10px;
-  font-weight: bold;
-  font-size: 13px;
-}
-
-/* 🟢 STATUS OK */
-.status-ok {
-  color: #16a34a;
-}
-
-/* 🟠 PENDENTE */
-.status-pendente {
-  color: #f59e0b;
-}
-
-/* 🔴 REJEITADO */
-.status-rejeitado {
-  color: #dc2626;
-}
-
-/* 📝 TEXTAREA OBSERVAÇÕES */
-textarea {
-  width: 100%;
-  min-height: 100px;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  resize: none;
-  font-size: 14px;
-  outline: none;
-  margin-top: 10px;
-  transition: 0.2s;
-}
-
-textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
-}
-
-/* 🔘 BOTÃO */
-button {
-  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
   background: #2563eb;
   color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
   font-weight: bold;
-  transition: 0.2s;
+  cursor: pointer;
 }
 
-button:hover {
-  background: #1d4ed8;
+.pt-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+/* STATUS */
+.pt-status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: capitalize;
 }
 
-/* 📱 RESPONSIVO */
-@media (max-width: 768px) {
-  .content {
-    padding: 15px;
-  }
+.pt-status.pendente {
+  background: #facc15;
+  color: #92400e;
+}
 
-  .card {
-    padding: 15px;
-  }
+.pt-status.aprovado {
+  background: #22c55e;
+  color: #064e3b;
+}
 
-  .content h1 {
-    font-size: 20px;
-  }
+.pt-status.rejeitado {
+  background: #ef4444;
+  color: #7f1d1d;
+}
+
+/* PREVIEW */
+.pt-preview {
+  width: 100%;
+  height: 180px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pt-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pt-preview iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* FILE NAME */
+.pt-file-name {
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.pt-info {
+  font-size: 12px;
+  color: #92400e;
+  margin-top: 8px;
 }
