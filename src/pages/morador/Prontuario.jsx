@@ -1,156 +1,139 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useProntuario } from '../../hooks/useProntuario';
 import { prontuarioService } from '../../services/prontuarioService';
-
 import Sidebar from '../../components/Sidebar';
-
 import CardDados from '../../components/CardDados';
 import CardDocumento from '../../components/CardDocumento';
-import CardUpload from '../../components/CardUpload';
 
-import './prontuario.css';
+// Importe o seu CSS de condomínios aqui
+import '../styles/condominios.css'; 
 
 export default function Prontuario() {
-
   const { user } = useAuth();
   const { usuario, morador, documentos, fetchData, loading } = useProntuario(user);
 
   const [uploading, setUploading] = useState(false);
-
-  // 🔥 RESTAURADO (ESSENCIAL)
-  const [files, setFiles] = useState({
-    identidade: null,
-    contrato: null
-  });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [files, setFiles] = useState({ identidade: null, contrato: null });
 
   useEffect(() => {
-    if (user?.id) {
-      fetchData();
-    }
-  }, [user]);
+    if (user?.email) fetchData();
+  }, [user?.email, fetchData]);
 
-  // 🔥 RESTAURADO
   const handleSelectFile = (file, tipo) => {
     if (!file) return;
-
-    setFiles(prev => ({
-      ...prev,
-      [tipo]: file
-    }));
+    setFiles(prev => ({ ...prev, [tipo]: file }));
   };
 
-  // 🔥 ESSA FUNÇÃO É DAQUI (Prontuario.jsx)
   const handleUpload = async (tipo) => {
     const file = files[tipo];
-
     if (!file || !user?.id || !morador?.id) return;
 
     try {
       setUploading(true);
-
-     
-
-await prontuarioService.uploadDocumento({
-  file,
-  userId: user.id,
-  moradorId: morador.id,
-  tipo,
-  origem: 'morador' // 🔥 ESSENCIAL
-});
-
-      // limpa arquivo após upload
-      setFiles(prev => ({
-        ...prev,
-        [tipo]: null
-      }));
-
+      await prontuarioService.uploadDocumento({
+        file,
+        userId: user.id,
+        moradorId: morador.id,
+        tipo,
+        origem: 'morador'
+      });
+      setFiles(prev => ({ ...prev, [tipo]: null }));
       await fetchData();
-
     } catch (err) {
-      console.error(err);
       alert('Erro no upload');
     } finally {
       setUploading(false);
     }
   };
 
-  const identidade = documentos.find(d => d.tipo === 'identidade');
+  // Status seguindo exatamente as classes .status-pill .active/.inactive
+  const renderStatus = (doc) => {
+    if (!doc) return <span className="status-pill inactive">Pendente</span>;
+    if (doc.status === 'aprovado') return <span className="status-pill active">Aprovado</span>;
+    if (doc.status === 'rejeitado') return <span className="status-pill inactive">Rejeitado</span>;
+    return <span className="status-pill active" style={{background: '#fef3c7', color: '#92400e'}}>Análise</span>;
+  };
 
-
-
-const contratoSindico = documentos
-  .filter(d => d.tipo === 'contrato' && d.origem === 'sindico')
-  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-
-const contratoMorador = documentos
-  .filter(d => d.tipo === 'contrato' && d.origem === 'morador')
-  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-
-  
-
-
-  
- 
-  if (loading) return <div className="pt-loading">Carregando...</div>;
+  const docIdade = useMemo(() => documentos.find(d => d.tipo === 'identidade'), [documentos]);
+  const docContrato = useMemo(() => {
+    return documentos
+      .filter(d => d.tipo === 'contrato' && d.origem === 'morador')
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+  }, [documentos]);
 
   return (
-    <div className="pt-wrapper">
-      <Sidebar user={user} />
+    <div className="ch-app-wrapper">
+      <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
 
-      <main className="pt-content">
-        <h1>Prontuário</h1>
+      <main className="ch-main-content">
+        <div className="page-container">
+          <div className="data-display-area">
+            
+            <div className="top-actions">
+              <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#111827' }}>
+                MEU PRONTUÁRIO
+              </h2>
+            </div>
 
-        <div className="pt-grid">
+            {loading ? (
+              <p>Carregando...</p>
+            ) : (
+              <div className="condo-grid">
+                
+                {/* CARD 1: DADOS PESSOAIS */}
+                <div className="condo-card">
+                  <div className="card-header">
+                    <span className="card-id">#PERFIL</span>
+                    <span className="status-pill active">DADOS</span>
+                  </div>
+                  <div className="card-body">
+                    <CardDados usuario={usuario} />
+                  </div>
+                </div>
 
-          {/* 👤 DADOS */}
-          <CardDados usuario={usuario} />
+                {/* CARD 2: IDENTIDADE */}
+                <div className="condo-card">
+                  <div className="card-header">
+                    <span className="card-id">#DOC-001</span>
+                    {renderStatus(docIdade)}
+                  </div>
+                  <div className="card-body">
+                    <CardDocumento
+                      titulo="Identidade / CNH"
+                      tipo="identidade"
+                      documento={docIdade}
+                      file={files.identidade}
+                      onSelect={handleSelectFile}
+                      onUpload={handleUpload}
+                      loading={uploading}
+                    />
+                  </div>
+                </div>
 
-        
+                {/* CARD 3: CONTRATO */}
+                <div className="condo-card">
+                  <div className="card-header">
+                    <span className="card-id">#DOC-002</span>
+                    {renderStatus(docContrato)}
+                  </div>
+                  <div className="card-body">
+                    <CardDocumento
+                      titulo="Contrato Assinado"
+                      tipo="contrato"
+                      documento={docContrato}
+                      file={files.contrato}
+                      onSelect={handleSelectFile}
+                      onUpload={handleUpload}
+                      loading={uploading}
+                    />
+                  </div>
+                </div>
 
-
-
-<CardDocumento
-  titulo="Contrato para Assinatura"
-  tipo="contrato"
-  descricao={
-    contratoSindico
-      ? "Baixe o contrato, faça a assinatura via Gov.br."
-      : "Aguardando envio do contrato pelo síndico."
-  }
-  documento={contratoSindico}
-  readOnly={true} // 🔥 MELHOR QUE hideUpload
-/>
-
-
-<CardDocumento
-  titulo="Identidade / CNH"
-  tipo="identidade"
-  descricao="Adicione a identidade ou CNH em formato JPEG, PNG ou PDF (máx. 4MB). Envie um arquivo legível e sem cortes. Após o envio, aguarde a aprovação do documento."
-  documento={identidade}
-  file={files.identidade}
-  onSelect={handleSelectFile}
-  onUpload={handleUpload}
-  loading={uploading}
-/>
-
-
-<CardDocumento
-  titulo="Enviar Contrato Assinado"
-  tipo="contrato"
-  descricao={
-    contratoSindico
-      ? "Envie o contrato assinado. Após o envio, aguarde a aprovação do documento."
-      : "Aguardando contrato do síndico para liberação do envio."
-  }
-  documento={contratoMorador}
-  file={files.contrato}
-  onSelect={handleSelectFile}
-  onUpload={handleUpload}
-  loading={uploading}
-  disabled={!contratoSindico} // 🔥 BLOQUEIO
-/>
-
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>

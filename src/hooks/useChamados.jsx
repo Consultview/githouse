@@ -1,32 +1,41 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { chamadosRepo } from '../database/ChamadosRepo';
 
-export function useChamados(user) { // 1. Recebe o user como parâmetro
+export function useChamados(user) {
+
   const [chamados, setChamados] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchChamados = useCallback(async () => {
-    if (!user) return; // Segurança: não busca se não houver usuário
+    if (!user?.id) return;
 
     try {
       setLoading(true);
-      // 2. Passa o user para o fetchAll filtrar no banco
+
+      // 🔥 ideal: repo filtra por usuario_id OU morador_id
       const data = await chamadosRepo.fetchAll(user);
-      setChamados(data);
+
+      setChamados(data || []);
     } catch (err) {
-      console.error('Erro ao carregar:', err);
+      console.error('Erro ao carregar chamados:', err);
+      setChamados([]);
     } finally {
       setLoading(false);
     }
-  }, [user]); // 3. Adiciona user às dependências do useCallback
+  }, [user?.id]);
 
-  // As estatísticas agora refletem apenas o que o usuário pode ver (Performance total)
-  const stats = {
+  // 🔥 stats otimizadas (evita recalcular sem necessidade)
+  const stats = useMemo(() => ({
     totalAbertos: chamados.filter(c => c.status === 'ABERTO').length,
     totalAndamento: chamados.filter(c => c.status === 'EM_ANDAMENTO').length,
     totalConcluidos: chamados.filter(c => c.status === 'CONCLUIDO').length,
     totalCancelados: chamados.filter(c => c.status === 'CANCELADO').length,
-  };
+  }), [chamados]);
 
-  return { chamados, loading, fetchChamados, stats };
+  return {
+    chamados,
+    loading,
+    fetchChamados,
+    stats
+  };
 }

@@ -1,20 +1,8 @@
 import { supabase } from '../SupabaseClient';
 
-const COLUNAS_PERMITIDAS = [
-  'url_identidade',
-  'url_contrato_locacao',
-  'url_ultimo_comprovante_pagamento'
-];
-
-const STATUS_PERMITIDOS = [
-  'status_identidade',
-  'status_contrato',
-  'status_financeiro'
-];
-
 export const moradorRepo = {
 
-  // 1. Busca pelo usuario_id (ID da tabela usuarios/Auth)
+  // 🔥 CORRETO: busca por usuario_id
   async buscarPorUsuario(usuarioId) {
     const { data, error } = await supabase
       .from('moradores')
@@ -26,10 +14,9 @@ export const moradorRepo = {
       .maybeSingle();
 
     if (error) throw error;
-    return { data };
+    return data;
   },
 
-  // 2. Busca pelo ID da própria tabela moradores
   async buscarPorId(id) {
     const { data, error } = await supabase
       .from('moradores')
@@ -41,55 +28,51 @@ export const moradorRepo = {
       .maybeSingle();
 
     if (error) throw error;
-    return { data };
+    return data;
   },
 
-  // 3. Upload de Documentos - MELHORADO
-  async salvarDocumento(moradorId, file, colUrl, colStatus) {
-    if (!COLUNAS_PERMITIDAS.includes(colUrl)) throw new Error('Coluna de URL inválida');
-    if (!STATUS_PERMITIDOS.includes(colStatus)) throw new Error('Coluna de status inválida');
+  // ⚠️ ainda funcional, mas NÃO ideal para escala
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `documentos/${moradorId}/${colUrl}_${Date.now()}.${fileExt}`;
+ async salvarDocumento(moradorId, usuarioId, file, tipoDoc) {
+   const fileExt = file.name.split('.').pop();
+   const filePath = `documentos/${moradorId}/${tipoDoc}_${Date.now()}.${fileExt}`;
+ 
+   // 1. Upload para o Storage
+   const { error: uploadError } = await supabase.storage
+     .from('anexos')
+     .upload(filePath, file);
+ 
+   if (uploadError) throw uploadError;
+ 
+   // 2. Insert na tabela CORRETA (documentos)
+   const { error: dbError } = await supabase
+     .from('documentos')
+     .insert([{
+       morador_id: moradorId,
+       usuario_id: usuarioId, // Você tem essa coluna no banco
+       tipo: tipoDoc,
+       url: filePath,
+       status: 'EM_ANALISE',
+       origem: 'WEB' // coluna 'origem' que existe na sua tabela
+     }]);
+ 
+   if (dbError) throw dbError;
+   return { filePath };
+ }
+ 
 
-    // Upload para o Bucket 'anexos'
-    const { error: uploadError } = await supabase.storage
-      .from('anexos')
-      .upload(filePath, file, { upsert: true });
-
-    if (uploadError) throw uploadError;
-
-    // IMPORTANTE: Salvamos o PATH (caminho) e não a URL assinada.
-    // Isso evita que o acesso ao documento expire após 24h.
-    const { error: dbError } = await supabase
-      .from('moradores')
-      .update({
-        [colUrl]: filePath,
-        [colStatus]: 'EM_ANALISE',
-        updated_at: new Date() // Usando a coluna updated_at da sua tabela
-      })
-      .eq('id', moradorId);
-
-    if (dbError) throw dbError;
-
-    return { filePath };
-  },
-
-  // 4. NOVO: Gerar link temporário para visualização
-  // Chame isso apenas quando precisar abrir o documento na tela
   async obterLinkDocumento(path) {
     if (!path) return null;
+
     const { data, error } = await supabase.storage
       .from('anexos')
-      .createSignedUrl(path, 3600); // 1 hora de validade
+      .createSignedUrl(path, 3600);
 
     if (error) throw error;
     return data.signedUrl;
   },
 
   async atualizarStatusDocumento(moradorId, campo, status) {
-    if (!STATUS_PERMITIDOS.includes(campo)) throw new Error('Campo inválido');
-
     const { error } = await supabase
       .from('moradores')
       .update({ 

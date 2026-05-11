@@ -2,9 +2,8 @@ import { useState, useCallback, useRef } from 'react';
 import { supabase } from '../SupabaseClient';
 
 export function useUsuarios() {
-  const [users, setUsers] = useState([]);
+  const [moradores, setMoradores] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const fetchingRef = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -14,42 +13,44 @@ export function useUsuarios() {
     try {
       setLoading(true);
 
+      // Buscamos a partir de 'moradores' fazendo o JOIN com 'usuarios'
       const { data, error } = await supabase
         .from('moradores')
         .select(`
           id,
           usuario_id,
           condominio_id,
-          bloco,
-          unidade,
-          status_identidade,
-          status_contrato,
-          status_financeiro,
-
+          ativo,
+          
           usuarios (
             id,
             nome,
             email,
-            perfil
+            perfil,
+            bloco,
+            numero_casa,
+            telefone,
+            status
           )
         `)
         .order('id', { ascending: true });
 
       if (error) throw error;
 
-      // 🔥 NORMALIZA JOIN (EVITA ARRAY / NULL / INCONSISTÊNCIA)
+      // Normaliza para facilitar o uso no Front-end
       const normalized = (data || []).map((item) => ({
-        ...item,
-        usuarios: Array.isArray(item.usuarios)
-          ? item.usuarios[0] || null
-          : item.usuarios || null
+        morador_id: item.id,
+        condominio_id: item.condominio_id,
+        ativo: item.ativo,
+        // Dados vindos do JOIN com a tabela usuarios
+        ...item.usuarios 
       }));
 
-      setUsers(normalized);
+      setMoradores(normalized);
 
     } catch (err) {
       console.error('Erro ao buscar moradores:', err.message);
-      setUsers([]);
+      setMoradores([]);
     } finally {
       setLoading(false);
       fetchingRef.current = false;
@@ -57,7 +58,7 @@ export function useUsuarios() {
   }, []);
 
   return {
-    users,
+    moradores,
     fetchData,
     loading
   };

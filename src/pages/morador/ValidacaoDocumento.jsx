@@ -1,140 +1,137 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
 import { prontuarioService } from '../../services/prontuarioService';
 import './validacaodocumento.css';
 
 export default function ValidacaoDocumentos() {
-
   const { user, loadingAuth } = useAuth();
   const [lista, setLista] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
-  // 🔥 controle correto por documento
-  const [aberto, setAberto] = useState({
-    docId: null,
-    moradorId: null
-  });
+  const loadData = useCallback(async () => {
+    if (!user) return;
+    try {
+      // Passa o objeto do usuário para filtrar por condomínio se necessário
+      const data = await prontuarioService.getProntuariosParaValidacao(user);
+      setLista(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loadingAuth && user) {
       loadData();
     }
-  }, [loadingAuth, user]);
-
-  const loadData = async () => {
-    const data = await prontuarioService.getProntuariosParaValidacao();
-    setLista(data || []);
-  };
+  }, [loadingAuth, user, loadData]);
 
   const aprovar = async (id) => {
-    await prontuarioService.aprovarDocumento(id);
-    loadData();
+    try {
+      await prontuarioService.aprovarDocumento(id, user?.perfil);
+      setPreviewDoc(null);
+      loadData();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const rejeitar = async (id) => {
-    await prontuarioService.rejeitarDocumento(id);
-    loadData();
+    try {
+      const motivo = window.prompt("Digite o motivo da rejeição:");
+      if (motivo === null) return;
+      await prontuarioService.rejeitarDocumento(id, user?.perfil, motivo);
+      setPreviewDoc(null);
+      loadData();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
-  if (loadingAuth) {
-    return <div className="docs-loading">Carregando...</div>;
-  }
+  if (loadingAuth || !user) return null;
 
   return (
-    <div className="docs-layout">
+    <div className="ch-app-wrapper">
+      <Sidebar user={user} isOpen={menuOpen} toggleMenu={() => setMenuOpen(!menuOpen)} />
 
-      <Sidebar user={user} />
+      <main className="ch-main-content">
+        <div className="page-container">
+          <header className="top-actions">
+            <h2>Validação de Documentos</h2>
+          </header>
 
-      <main className="docs-content">
-
-        <h1>Validação de Documentos</h1>
-
-        <div className="docs-grid">
-
-          {lista.map((item) => (
-
-            <div key={item.id} className="doc-card">
-
-              <div className="doc-header">
-                <h3>{item.usuarios?.nome || 'Sem nome'}</h3>
-
-                {/* 🔥 corrigido: não é ID do morador, é do usuário */}
-                <span className="txt-small">
-                  Usuário #{item.usuario_id}
-                </span>
-              </div>
-
-              {(item.documentos || []).map((doc) => (
-
-                <div key={doc.id} className="doc-item">
-
-                  <div className="doc-top">
-
-                    <span className="doc-tipo">{doc.tipo}</span>
-
-                    <span className={`status-badge ${doc.status}`}>
-                      {doc.status}
-                    </span>
-
-                    <button
-                      className="btn-view"
-                      onClick={() =>
-                        setAberto({
-                          docId: aberto.docId === doc.id ? null : doc.id,
-                          moradorId: item.id
-                        })
-                      }
-                    >
-                      Ver
-                    </button>
-
-                  </div>
-
-                  {aberto.docId === doc.id && (
-
-                    <div className="doc-preview">
-
-                      {/* 🔥 preview mais seguro */}
-                      <iframe
-                        src={doc.url}
-                        title="documento"
-                      />
-
-                      {doc.status === 'pendente' && (
-                        <div className="doc-actions">
-
-                          <button
-                            className="btn-ok"
-                            onClick={() => aprovar(doc.id)}
-                          >
-                            Aprovar
-                          </button>
-
-                          <button
-                            className="btn-bad"
-                            onClick={() => rejeitar(doc.id)}
-                          >
-                            Rejeitar
-                          </button>
-
+          <div className="data-display-area">
+            <div className="table-responsive">
+              <table className="standard-table">
+                <thead>
+                  <tr>
+                    <th className="col-id">ID</th>
+                    <th>USUÁRIO</th>
+                    <th>DOCUMENTO</th>
+                    <th>STATUS</th>
+                    <th className="col-actions">AÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lista.map((item) => (
+                    <tr key={item.id}>
+                      <td className="text-id">#{item.id.toString().padStart(4, '0')}</td>
+                      <td>
+                        <div className="user-info-cell">
+                          <span className="text-bold">{item.usuarios?.nome || 'Sem nome'}</span>
+                          <small>Usuário #{item.usuario_id}</small>
                         </div>
-                      )}
-
-                    </div>
-
-                  )}
-
-                </div>
-
-              ))}
-
+                      </td>
+                      <td>
+                        <div className="doc-list">
+                          {item.documentos?.map((doc) => (
+                            <div key={doc.id} className="doc-chip">{doc.tipo}</div>
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="doc-list">
+                          {item.documentos?.map((doc) => (
+                            <span key={doc.id} className={`status-pill ${doc.status}`}>{doc.status}</span>
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="doc-actions-list">
+                          {item.documentos?.map((doc) => (
+                            <div key={doc.id} className="table-actions-group">
+                              <button className="btn-icon-action" onClick={() => setPreviewDoc(doc)}>👁️</button>
+                              {doc.status === 'pendente' && (
+                                <>
+                                  <button className="btn-icon-action success" onClick={() => aprovar(doc.id)}>✔️</button>
+                                  <button className="btn-icon-action danger" onClick={() => rejeitar(doc.id)}>❌</button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-          ))}
-
+          </div>
         </div>
-
       </main>
+
+      {previewDoc && (
+        <div className="modal-overlay" onClick={() => setPreviewDoc(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{previewDoc.tipo}</h2>
+              <button onClick={() => setPreviewDoc(null)}>&times;</button>
+            </div>
+            <iframe src={previewDoc.url} title="documento" style={{width: '100%', height: '500px', border: 'none'}} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

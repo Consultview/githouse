@@ -2,26 +2,34 @@ import { supabase } from '../SupabaseClient';
 
 export const usuariosRepo = {
 
-  // 🔥 PADRÃO: busca usuários já com relacionamento correto
-  async fetchAll() {
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select(`
-        *,
-        condominios (
-          id,
-          nome
-        )
-      `)
-      .order('id', { ascending: true })
-      .limit(100);
+  // 🔥 IDENTIDADE (somente usuários base)
 
-    if (error) throw error;
+  
+async fetchAll() {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .select(`
+      id,
+      nome,
+      email,
+      telefone,
+      perfil,
+      status,
+      created_at,
+      condominio_id,
+      bloco,
+      numero_casa,
+      cpf
+    `)
+    .order('id', { ascending: true });
 
-    return data || [];
-  },
+  if (error) throw error;
+  return data || [];
+},
 
-  // 🔥 Condominios
+
+
+  // 🔥 CONDOMÍNIOS (independente de usuário)
   async fetchCondominios() {
     const { data, error } = await supabase
       .from('condominios')
@@ -29,41 +37,54 @@ export const usuariosRepo = {
       .order('nome', { ascending: true });
 
     if (error) throw error;
-
     return data || [];
   },
 
-  // 🔥 CREATE / UPDATE
+  // 🔥 CREATE / UPDATE (IDENTIDADE PURA)
   async save(dados, id = null) {
 
-    // evita enviar campos vazios desnecessários
-    const payload = { ...dados };
 
-    if (!payload.senha) {
-      delete payload.senha; // não sobrescreve senha sem necessidade
+const payload = {
+  nome: dados.nome,
+  cpf: dados.cpf,
+  email: dados.email,
+  telefone: dados.telefone || null,
+  perfil: dados.perfil ? parseInt(dados.perfil) : null,
+  condominio_id: dados.condominio_id ? parseInt(dados.condominio_id) : null, // 🔥 ESSENCIAL
+  status: dados.status ?? true
+};
+    // ⚠️ senha idealmente NÃO fica aqui (depende do teu auth)
+    if (dados.senha && dados.senha.trim() !== "") {
+      payload.senha = dados.senha;
     }
 
-    if (id) {
+    try {
+      if (id) {
+        const { error } = await supabase
+          .from('usuarios')
+          .update(payload)
+          .eq('id', id);
+
+        if (error) throw error;
+
+        return { success: true, action: 'updated' };
+      }
+
       const { error } = await supabase
         .from('usuarios')
-        .update(payload)
-        .eq('id', id);
+        .insert([payload]);
 
       if (error) throw error;
 
-      return { success: true, action: 'updated' };
+      return { success: true, action: 'created' };
+
+    } catch (error) {
+      console.error("Erro no UsuariosRepo:", error.message);
+      throw error;
     }
-
-    const { error } = await supabase
-      .from('usuarios')
-      .insert([payload]);
-
-    if (error) throw error;
-
-    return { success: true, action: 'created' };
   },
 
-  // 🔥 STATUS TOGGLE
+  // 🔥 STATUS
   async updateStatus(id, newStatus) {
     const { error } = await supabase
       .from('usuarios')
@@ -71,7 +92,6 @@ export const usuariosRepo = {
       .eq('id', id);
 
     if (error) throw error;
-
     return { success: true };
   }
 };

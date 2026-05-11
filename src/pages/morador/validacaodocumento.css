@@ -1,118 +1,166 @@
-/* Layout */
+/* ================= LAYOUT ================= */
 .docs-layout {
   display: flex;
+  min-height: 100vh;
+  background: #f4f6f9;
 }
 
 .docs-content {
-  margin-left: 240px;
-  padding: 30px 20px; /* 🔥 MAIS ESPAÇO */
-  width: 100%;
-  background: #f5f7fa;
+  flex: 1;
+  padding: 30px;
 }
 
-/* Título */
-.docs-content h1 {
-  margin-bottom: 25px;
-  font-size: 20px;
-}
-
-/* Grid */
-.docs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
-}
-
-/* Card */
-.doc-card {
-  background: #fff;
-  padding: 18px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-/* Header */
-.doc-header {
-  margin-bottom: 10px;
-}
-
-.doc-header h3 {
-  margin: 0;
-  font-size: 14px;
-}
-
-.doc-header span {
-  font-size: 11px;
-  color: #94a3b8;
-}
-
-/* Item */
-.doc-item {
-  margin-top: 12px;
-}
-
-/* Linha superior */
-.doc-top {
+/* ================= HEADER ================= */
+.docs-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  margin-bottom: 20px;
 }
 
-/* Tipo */
-.doc-tipo {
+/* ================= STATUS ================= */
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
   font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
   text-transform: capitalize;
 }
 
-/* Preview */
-.doc-preview {
-  margin-top: 10px;
+.status-pill.pendente {
+  background: #facc15;
+  color: #92400e;
 }
 
-.doc-preview iframe {
-  width: 100%;
-  height: 220px;
-  border-radius: 8px;
-  border: none;
+.status-pill.aprovado {
+  background: #22c55e;
+  color: #ffffff;
 }
 
-/* Ações */
-.doc-actions {
+.status-pill.rejeitado {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.btn-icon-action.success {
+  color: #22c55e;
+}
+
+.btn-icon-action.danger {
+  color: #ef4444;
+}
+
+/* ================= TABLE AJUSTES ================= */
+
+.user-info-cell {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  flex-direction: column;
 }
 
-/* Status */
-.status-badge {
-  font-size: 10px;
-  padding: 3px 6px;
-  border-radius: 999px;
+.user-info-cell small {
+  color: #64748b;
+  font-size: 12px;
 }
 
-.status-badge.aprovado { background: #dcfce7; }
-.status-badge.pendente { background: #fef3c7; }
-.status-badge.rejeitado { background: #fee2e2; }
-.status-badge.nao-enviado { background: #e2e8f0; }
+.text-id {
+  font-weight: bold;
+  color: #64748b;
+}
 
-/* Botões */
-button {
-  border: none;
-  padding: 5px 10px;
-  font-size: 11px;
+/* 🔥 melhor alinhamento */
+.table-actions-group {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+/* hover linha */
+.standard-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+/* ================= DOCS MULTIPLOS ================= */
+
+.doc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* chip documento */
+.doc-chip {
+  background: #e2e8f0;
+  padding: 4px 8px;
   border-radius: 6px;
-  cursor: pointer;
+  font-size: 12px;
 }
 
-.btn-ok { background: #22c55e; color: #fff; }
-.btn-bad { background: #ef4444; color: #fff; }
-.btn-view { background: #3b82f6; color: #fff; }
+/* ações agrupadas */
+.doc-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start; /* 🔥 IMPORTANTE */
+}
 
-/* Mobile */
+/* ================= MODAL ================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 900px;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  color: #1e293b;
+}
+
+.modal-content iframe {
+  width: 100%;
+  height: 500px;
+  border: none;
+}
+
+/* ================= RESPONSIVO ================= */
 @media (max-width: 768px) {
+
   .docs-content {
-    margin-left: 0;
-    padding: 20px;
+    padding: 15px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .standard-table {
+    min-width: 650px;
+  }
+
+  .modal-content iframe {
+    height: 300px;
   }
 }

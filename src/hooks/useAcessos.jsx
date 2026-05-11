@@ -9,33 +9,38 @@ export function useAcessos() {
   const loadCondos = useCallback(async () => {
     try {
       const data = await acessosRepo.fetchCondominios();
-      setCondominios(data);
-      return data;
+      setCondominios(data || []);
+      return data || [];
     } catch (err) {
       console.error("Erro ao carregar condomínios:", err);
       return [];
     }
   }, []);
 
-  const loadPerms = useCallback(async (idCondo, idPerfil) => {
-    if (!idCondo || !idPerfil) return;
+  const loadPerms = useCallback(async (condominioId, perfilId) => {
+    if (!condominioId || !perfilId) return;
 
     try {
       setLoading(true);
-      setPermissoes({}); // Limpa estado anterior
+      setPermissoes({});
 
-      const data = await acessosRepo.fetchPermissoes(idCondo, idPerfil);
-      const novoEstado = {};
 
-      data.forEach(regra => {
-        // Mapeamento idêntico ao que o componente Acessos.jsx usa nos switches
-        novoEstado[`${regra.modulo_id}-Ver`] = !!regra.p_ver;
-        novoEstado[`${regra.modulo_id}-Criar`] = !!regra.p_criar;
-        novoEstado[`${regra.modulo_id}-Editar`] = !!regra.p_editar;
-        novoEstado[`${regra.modulo_id}-Excluir`] = !!regra.p_excluir;
-      });
 
-      setPermissoes(novoEstado);
+// Dentro do seu loadPerms no useAcessos.js
+const data = await acessosRepo.fetchPermissoes(condominioId, perfilId);
+
+const novoEstado = {};
+(data || []).forEach(regra => {
+  novoEstado[regra.modulo_id] = {
+    ver: !!regra.p_ver,
+    criar: !!regra.p_criar,
+    editar: !!regra.p_editar,
+    excluir: !!regra.p_excluir
+  };
+});
+setPermissoes(novoEstado);
+
+
     } catch (err) {
       console.error("Erro ao processar permissões:", err);
     } finally {
@@ -43,11 +48,16 @@ export function useAcessos() {
     }
   }, []);
 
+
+
+
   const togglePerm = (moduloId, acao) => {
-    const chave = `${moduloId}-${acao}`;
     setPermissoes(prev => ({
       ...prev,
-      [chave]: !prev[chave]
+      [moduloId]: {
+        ...prev[moduloId],
+        [acao]: !prev?.[moduloId]?.[acao]
+      }
     }));
   };
 

@@ -3,21 +3,38 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 export function useAuth() {
   const navigate = useNavigate();
-  const location = useLocation(); // Adicionado para re-checar ao mudar de rota
+  const location = useLocation();
+
   const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
     const checkAuth = () => {
-      const sessionData = localStorage.getItem('cityhouse_session');
+      try {
+        const sessionData = localStorage.getItem('cityhouse_session');
 
-      if (sessionData) {
+        if (!sessionData) {
+          setUser(null);
+          setLoadingAuth(false);
+
+          if (location.pathname !== '/login') {
+            navigate('/login');
+          }
+
+          return;
+        }
+
         const parsedUser = JSON.parse(sessionData);
+
         setUser(parsedUser);
         setLoadingAuth(false);
-      } else {
+
+      } catch (err) {
+        console.error('Erro ao ler sessão:', err);
+        localStorage.removeItem('cityhouse_session');
+        setUser(null);
         setLoadingAuth(false);
-        // Evita loop infinito se já estiver no login
+
         if (location.pathname !== '/login') {
           navigate('/login');
         }
@@ -25,7 +42,7 @@ export function useAuth() {
     };
 
     checkAuth();
-  }, [navigate, location.pathname]); // Re-executa se mudar de página
+  }, []); // 🔥 roda só uma vez
 
   return { user, loadingAuth };
 }
